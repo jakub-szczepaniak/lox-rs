@@ -25,8 +25,7 @@ fn run_file(path: &str) {
 
     buf_reader.read_to_end(&mut buf).expect("error reading file");
 
-    run(&buf);    
-
+    run(&buf);
 }
 fn run_prompt() {}
 
