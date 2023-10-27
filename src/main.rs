@@ -5,7 +5,7 @@ use std::fs::File;
 fn main() {
     let args: Vec<String> = args().collect();
     println!("Hello, world! {:?}", args);
-    
+    println!("Hello, world! {:?}", args.len());
     if args.len() > 1 {
         println!("Usage: lox-rs [script]");
         std::process::exit(64);
