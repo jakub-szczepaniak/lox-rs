@@ -6,16 +6,14 @@ fn main() {
     let args: Vec<String> = args().collect();
     println!("Hello, world! {:?}", args);
     
-    if args.len() > 2 {
-        println!("Usage: lox-rs [script]");
-        std::process::exit(64);
-    } else if args.len() == 2 {
-        run_file(&args[1]);
-    } else {
-        run_prompt();
+    match args.len() {
+        1 => run_prompt(),
+        2 => run_file(&args[1]),
+        _ => { 
+            println!("Usage: lox-rs [script]");
+            std::process::exit(64);
+        }
     }
-
-    println!("Hello, world! {:?}", args);
 }
 
 fn run_file(path: &str) {
@@ -23,7 +21,7 @@ fn run_file(path: &str) {
         Ok(contents) => contents,
         Err(e) => {
             println!("Error reading file: {}", e);
-            return 
+            std::process::exit(64); 
         }
     };
     
