@@ -6,33 +6,35 @@ fn main() {
     let args: Vec<String> = args().collect();
     println!("Hello, world! {:?}", args);
     
-    if args.len() > 1 {
+    if args.len() > 2 {
         println!("Usage: lox-rs [script]");
         std::process::exit(64);
-    } else if args.len() == 1 {
-        run_prompt();
-    } else {
+    } else if args.len() == 2 {
         run_file(&args[1]);
+    } else {
+        run_prompt();
     }
 
     println!("Hello, world! {:?}", args);
 }
 
-fn run_file(path: &str) -> io::Result<()> {
+fn run_file(path: &str) {
     let contents = match std::fs::read_to_string(path) {
         Ok(contents) => contents,
         Err(e) => {
             println!("Error reading file: {}", e);
-            return Ok(());
+            return 
         }
     };
     
     
     match run(&contents) {
         Ok(_) => (),
-        Err(e) => println!("Error running file: {}", e),
+        Err(e) => {
+            report(e, "".to_string());
+            std::process::exit(65);
+        }
     }
-    Ok(())
 }
 fn run_prompt() {
     let stdin = io::stdin();
@@ -77,13 +79,21 @@ impl Scanner {
 
 
 
-struct LoxError {
-    message: String,
-    line: usize,
+pub struct LoxError {
+    pub message: String,
+    pub line: usize,
 }
 
 impl fmt::Display for LoxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Line: {}, Error: {}", self.line, self.message)
     }
+}
+
+pub fn error(line: usize, message: String) -> LoxError {
+    LoxError { message, line }
+}
+
+pub fn report(err: LoxError, loc: String) {
+    println!("[line {}] Error {}: {}", err.line, loc, err.message);
 }
