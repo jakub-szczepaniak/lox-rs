@@ -1,5 +1,6 @@
 use std::env::args;
 use std::io::{BufRead,  self};
+use std::fmt;
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -27,7 +28,10 @@ fn run_file(path: &str) -> io::Result<()> {
     };
     
     
-    run(&contents);
+    match run(&contents) {
+        Ok(_) => (),
+        Err(e) => println!("Error running file: {}", e),
+    }
     Ok(())
 }
 fn run_prompt() {
@@ -35,17 +39,21 @@ fn run_prompt() {
     print!("> ");
     for line in stdin.lock().lines() {
         let line = line.unwrap();
-        run(&line);
+        match run(&line) {
+            Ok(_) => (),
+            Err(e) => println!("Error: {}", e),   
+        }
         print!("> ");
     }
 }
 
-fn run(source: &str) {
+fn run(source: &str) -> Result<(),LoxError> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens();
     for token in tokens {
         println!("{:?}", token);
     }
+    Ok(())
 }
 
 #[derive(Debug)]
@@ -64,5 +72,18 @@ impl Scanner {
     }
     fn scan_tokens(self) -> Vec<Token> {
         Vec::<Token>::new()
+    }
+}
+
+
+
+struct LoxError {
+    message: String,
+    line: usize,
+}
+
+impl fmt::Display for LoxError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Line: {}, Error: {}", self.line, self.message)
     }
 }
