@@ -1,6 +1,7 @@
+mod error;
+use error::LoxError;
 use std::env::args;
 use std::io::{BufRead,  self};
-use std::fmt;
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -29,7 +30,7 @@ fn run_file(path: &str) {
     match run(&contents) {
         Ok(_) => (),
         Err(e) => {
-            report(e, "".to_string());
+            e.report("".to_string());
             std::process::exit(65);
         }
     }
@@ -38,12 +39,20 @@ fn run_prompt() {
     let stdin = io::stdin();
     print!("> ");
     for line in stdin.lock().lines() {
-        let line = line.unwrap();
-        match run(&line) {
-            Ok(_) => (),
-            Err(e) => println!("Error: {}", e),   
+        if let Ok(line) = line {
+            if line.is_empty() {
+                continue;
+            } 
+            match run(&line) {
+                Ok(_) => (),
+                Err(e) => {
+                    e.report("".to_string());
+                }
+            }
+
+        } else {
+            break;
         }
-        print!("> ");
     }
 }
 
@@ -77,21 +86,3 @@ impl Scanner {
 
 
 
-pub struct LoxError {
-    pub message: String,
-    pub line: usize,
-}
-
-impl fmt::Display for LoxError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Line: {}, Error: {}", self.line, self.message)
-    }
-}
-
-pub fn error(line: usize, message: String) -> LoxError {
-    LoxError { message, line }
-}
-
-pub fn report(err: LoxError, loc: String) {
-    println!("[line {}] Error {}: {}", err.line, loc, err.message);
-}
