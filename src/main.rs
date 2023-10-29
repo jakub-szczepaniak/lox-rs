@@ -1,11 +1,13 @@
 mod error;
+mod token_type;
+mod token;
 use error::LoxError;
+use token::Token;
 use std::env::args;
 use std::io::{BufRead,  self};
 
 fn main() {
     let args: Vec<String> = args().collect();
-    println!("Hello, world! {:?}", args);
     
     match args.len() {
         1 => run_prompt(),
@@ -36,8 +38,9 @@ fn run_file(path: &str) {
     }
 }
 fn run_prompt() {
-    let stdin = io::stdin();
     print!("> ");
+   
+    let stdin = io::stdin();
     for line in stdin.lock().lines() {
         if let Ok(line) = line {
             if line.is_empty() {
@@ -53,22 +56,20 @@ fn run_prompt() {
         } else {
             break;
         }
+    print!("> ");
+   
     }
 }
 
 fn run(source: &str) -> Result<(),LoxError> {
-    let mut scanner = Scanner::new(source);
-    let tokens = scanner.scan_tokens();
-    for token in tokens {
-        println!("{:?}", token);
+    //let mut scanner = Scanner::new(source);
+    //let tokens = scanner.scan_tokens();
+    for token in source.split_whitespace() {
+        println!("{}", token);
     }
     Ok(())
 }
 
-#[derive(Debug)]
-struct Token {
-    token: String,
-}
 
 struct Scanner{
     source: String,
