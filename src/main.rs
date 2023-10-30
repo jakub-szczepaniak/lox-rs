@@ -1,6 +1,8 @@
 mod error;
 mod token_type;
 mod token;
+mod scanner;
+use scanner::Scanner;
 use error::LoxError;
 use token::Token;
 use std::env::args;
@@ -29,7 +31,7 @@ fn run_file(path: &str) {
     };
     
     
-    match run(&contents) {
+    match run(contents) {
         Ok(_) => (),
         Err(e) => {
             e.report("".to_string());
@@ -46,7 +48,7 @@ fn run_prompt() {
             if line.is_empty() {
                 continue;
             } 
-            match run(&line) {
+            match run(line) {
                 Ok(_) => (),
                 Err(e) => {
                     e.report("".to_string());
@@ -61,29 +63,16 @@ fn run_prompt() {
     }
 }
 
-fn run(source: &str) -> Result<(),LoxError> {
-    //let mut scanner = Scanner::new(source);
-    //let tokens = scanner.scan_tokens();
-    for token in source.split_whitespace() {
-        println!("{}", token);
+fn run(source: String) -> Result<(),LoxError> {
+    let mut scanner = Scanner::new(source);
+    let tokens = scanner.scan_tokens()?;
+    for token in tokens {
+        println!("{:?}", token);
     }
     Ok(())
 }
 
 
-struct Scanner{
-    source: String,
-}
-impl Scanner {
-    fn new (source: &str) -> Scanner {
-        Scanner {
-            source: source.to_string(),
-        }
-    }
-    fn scan_tokens(self) -> Vec<Token> {
-        Vec::<Token>::new()
-    }
-}
 
 
 

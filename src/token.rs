@@ -10,6 +10,7 @@ pub enum Literal {
     Nil,
 }
 
+#[derive(Debug)]
 pub struct Token {
     ttype: TokenType,
     lexeme: String,
@@ -24,6 +25,14 @@ impl Token {
             lexeme,
             line,
             literal,
+        }
+    }
+    pub fn eof(line: usize) -> Token {
+        Token {
+            ttype: TokenType::Eof,
+            lexeme: "".to_string(),
+            line,
+            literal: None,       
         }
     }
 }
