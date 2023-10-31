@@ -4,9 +4,8 @@ mod token;
 mod scanner;
 use scanner::Scanner;
 use error::LoxError;
-use token::Token;
 use std::env::args;
-use std::io::{BufRead,  self};
+use std::io::{BufRead, Write, stdout , self};
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -41,6 +40,7 @@ fn run_file(path: &str) {
 }
 fn run_prompt() {
     print!("> ");
+    stdout().flush();
    
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
