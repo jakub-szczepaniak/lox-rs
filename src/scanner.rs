@@ -47,28 +47,40 @@ impl Scanner {
             ';' => self.add_token(TokenType::Semicolon),
             '*' => self.add_token(TokenType::Star),
             '!' => { 
-                if self.peek('=') {
+                if self.take_expected('=') {
                      self.add_token(TokenType::BangEqual) 
                 } else { self.add_token(TokenType::Bang) } },
             '=' => { 
-                if self.peek('=') {
+                if self.take_expected('=') {
                      self.add_token(TokenType::Equals) 
                 } else { self.add_token(TokenType::Assign) } },
             '<' => {
-                if self.peek('=') {
+                if self.take_expected('=') {
                     self.add_token(TokenType::LessEqual)
                 } else { self.add_token(TokenType::Less) } },
             '>' => {
-                if self.peek('=') {
+                if self.take_expected('=') {
                     self.add_token(TokenType::GreaterEqual)
                 } else { self.add_token(TokenType::Greater) } },
+            '/' => {
+                if self.take_expected('/') {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                } else {
+                    self.add_token(TokenType::Slash)
+                }
+            },
+            ' ' | '\r' | '\t' => (),
+            '\n' => self.line += 1,
+            '"' => self.string(),
             _ => unreachable!("Unexpected character: {}", c)
         }
     
     }
 
    fn advance(&mut self) -> char {
-       let result = self.source.get(self.current).unwrap().clone();
+       let result = *self.source.get(self.current).unwrap();
         self.current += 1;
         result
    }
@@ -80,7 +92,7 @@ impl Scanner {
         self.tokens.push(Token::new(ttype, lexeme, self.line, literal));  
     }
 
-    fn peek(&mut self, expected: char) -> bool {
+    fn take_expected(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             return false;
         }
@@ -89,6 +101,26 @@ impl Scanner {
         }
         self.current += 1;
         true
+    }
+    fn peek(&self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        }
+        self.source[self.current]
+    }
+    fn string(&mut self) {
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+            self.advance();
+        }
+        if self.is_at_end() {
+            unreachable!("Unterminated string");
+        }
+        self.advance();
+        let value = self.source[self.start+1..self.current-1].iter().collect();
+        self.add_token_object(TokenType::String, Some(Literal::String(value)));
     }
 
 }
