@@ -10,11 +10,11 @@ impl fmt::Display for LoxError {
     }
 }
 impl LoxError {
-    pub fn error(_: Self, line: usize, message: String) -> LoxError {
+    pub fn error(line: usize, message: String) -> LoxError {
         LoxError { message, line }
     }
     pub fn report(&self, loc: String) {
-        println!("[line {}] Error {}: {}", self.line, loc, self.message);
+        println!("[{}:{}] Error: {}", self.line, loc, self.message);
     }    
 }
 

@@ -23,7 +23,10 @@ impl Scanner {
    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxError> {
         while !self.is_at_end() {
             self.start = self.current;
-            self.scan_token()
+            match self.scan_token() {
+                Ok(_) => (),
+                Err(e) => e.report(self.current.to_string()),    
+            }
         }
 
         self.tokens.push(Token::eof(self.line));
@@ -33,7 +36,7 @@ impl Scanner {
     fn is_at_end(&self) -> bool {
        self.current >= self.source.len()
     }
-    fn scan_token(&mut self) {
+    fn scan_token(&mut self) -> Result<(), LoxError> {
         let c = self.advance();
         match c {
             '(' => self.add_token(TokenType::LeftParen),
@@ -74,9 +77,9 @@ impl Scanner {
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
             '"' => self.string(),
-            _ => unreachable!("Unexpected character: {}", c)
+            _ => return Err(LoxError::error(self.line, "Unexpected character".to_string()))
         }
-    
+        Ok(())
     }
 
    fn advance(&mut self) -> char {
