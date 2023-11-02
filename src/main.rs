@@ -50,8 +50,8 @@ fn run_prompt() {
             } 
             match run(line) {
                 Ok(_) => (),
-                Err(e) => {
-                    e.report("".to_string());
+                Err(_e) => {
+                    // error was already reported in scanner
                 }
             }
 
@@ -59,7 +59,7 @@ fn run_prompt() {
             break;
         }
     print!("> ");
-   
+    stdout().flush();
     }
 }
 

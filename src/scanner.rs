@@ -21,17 +21,24 @@ impl Scanner {
         }
    } 
    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxError> {
+        let mut had_error: Option<LoxError> = None;
+        
         while !self.is_at_end() {
             self.start = self.current;
             match self.scan_token() {
                 Ok(_) => (),
-                Err(e) => e.report(self.current.to_string()),    
+                Err(e) => {
+                    e.report(self.current.to_string());
+                    had_error = Some(e);
+                }
             }
         }
 
         self.tokens.push(Token::eof(self.line));
-     
-     Ok(&self.tokens)
+        if let Some(e) = had_error {
+            return Err(e);
+        } 
+        Ok(&self.tokens)
    }
     fn is_at_end(&self) -> bool {
        self.current >= self.source.len()
@@ -67,7 +74,10 @@ impl Scanner {
                 } else { self.add_token(TokenType::Greater) } },
             '/' => {
                 if self.take_expected('/') {
-                    while self.peek() != '\n' && !self.is_at_end() {
+                    while let Some(ch) = self.peek() {
+                        if ch == '\n' {
+                            break;
+                        }
                         self.advance();
                     }
                 } else {
@@ -76,7 +86,7 @@ impl Scanner {
             },
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
-            '"' => self.string(),
+            '"' => self.string()?,
             _ => return Err(LoxError::error(self.line, "Unexpected character".to_string()))
         }
         Ok(())
@@ -96,34 +106,35 @@ impl Scanner {
     }
 
     fn take_expected(&mut self, expected: char) -> bool {
-        if self.is_at_end() {
-            return false;
+        match self.source.get(self.current) {
+            Some(c) if *c == expected => {
+                self.current += 1;
+                true
+            }
+            _ => false
         }
-        if self.source[self.current] != expected {
-            return false;
-        }
-        self.current += 1;
-        true
     }
-    fn peek(&self) -> char {
-        if self.is_at_end() {
-            return '\0';
-        }
-        self.source[self.current]
+    fn peek(&self) -> Option<char> {
+        self.source.get(self.current).copied()
     }
-    fn string(&mut self) {
-        while self.peek() != '"' && !self.is_at_end() {
-            if self.peek() == '\n' {
-                self.line += 1;
+
+    fn string(&mut self) -> Result<(), LoxError> { 
+        while let Some(ch) = self.peek() {
+            match ch {
+                '"' => break,
+                '\n' => self.line += 1,
+                _ => ()
             }
             self.advance();
         }
         if self.is_at_end() {
-            unreachable!("Unterminated string");
+            return Err(LoxError::error(self.line, "Unterminated string".to_string()));
         }
+        
         self.advance();
         let value = self.source[self.start+1..self.current-1].iter().collect();
         self.add_token_object(TokenType::String, Some(Literal::String(value)));
+        Ok(())
     }
 
 }
