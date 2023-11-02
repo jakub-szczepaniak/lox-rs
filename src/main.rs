@@ -32,8 +32,7 @@ fn run_file(path: &str) {
     
     match run(contents) {
         Ok(_) => (),
-        Err(e) => {
-            e.report("".to_string());
+        Err(_e) => {
             std::process::exit(65);
         }
     }
