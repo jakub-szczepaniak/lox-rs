@@ -88,6 +88,9 @@ impl Scanner {
             '\n' => self.line += 1,
             '"' => self.string()?,
             '0'..='9' => self.number()?,
+            _ => if c.is_ascii_alphabetic() || c == '_' {
+                self.identifier()
+            }
             _ => return Err(LoxError::error(self.line, "Unexpected character".to_string()))
         }
         Ok(())
@@ -121,6 +124,21 @@ impl Scanner {
     fn peek_next(&self) -> Option<char> {
         self.source.get(self.current+1).copied()
     }
+    
+    fn identifier(&mut self) {
+        while Scanner::is_alpha_numeric(self.peek()) {
+            self.advance();
+        }
+        let text : String = self.source[self.start..self.current].iter().collect();
+        self.add_token_object(TokenType::Identifier, Some(Literal::Identifier(text)))
+    }
+
+    fn is_alpha_numeric(c: Option<char>) -> bool {
+        match c {
+            Some(c) => c.is_ascii_alphanumeric(),
+            None => false}
+    }
+
     fn number(&mut self) -> Result<(), LoxError> {
         while Scanner::is_digit(self.peek()) {
             self.advance();

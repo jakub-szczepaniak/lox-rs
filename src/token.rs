@@ -5,6 +5,7 @@ use crate::token_type::TokenType;
 #[derive(Debug)]
 pub enum Literal {
     String(String),
+    Identifier(String),
     Number(f64),
     Boolean(bool),
     Nil,
