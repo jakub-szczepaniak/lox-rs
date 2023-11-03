@@ -87,16 +87,18 @@ impl Scanner {
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
             '"' => self.string()?,
+            '0'..='9' => self.number()?,
             _ => return Err(LoxError::error(self.line, "Unexpected character".to_string()))
         }
         Ok(())
     }
-
-   fn advance(&mut self) -> char {
+    
+    
+    fn advance(&mut self) -> char {
        let result = *self.source.get(self.current).unwrap();
         self.current += 1;
         result
-   }
+    }
     fn add_token(&mut self, ttype: TokenType) {
         self.add_token_object(ttype, None);
     }
@@ -104,7 +106,6 @@ impl Scanner {
         let lexeme = self.source[self.start..self.current].iter().collect();
         self.tokens.push(Token::new(ttype, lexeme, self.line, literal));  
     }
-
     fn take_expected(&mut self, expected: char) -> bool {
         match self.source.get(self.current) {
             Some(c) if *c == expected => {
@@ -117,7 +118,32 @@ impl Scanner {
     fn peek(&self) -> Option<char> {
         self.source.get(self.current).copied()
     }
+    fn peek_next(&self) -> Option<char> {
+        self.source.get(self.current+1).copied()
+    }
+    fn number(&mut self) -> Result<(), LoxError> {
+        while Scanner::is_digit(self.peek()) {
+            self.advance();
+        }
+        
+        if self.peek() == Some('.') && Scanner::is_digit(self.peek_next()) {
+            self.advance();
+            while Scanner::is_digit(self.peek()) {
+                self.advance();
+            }
+        }               
+          
+        let value : String = self.source[self.start..self.current].iter().collect();
+        self.add_token_object(TokenType::Number, Some(Literal::Number(value.parse::<f64>().unwrap())));
+        Ok(())
+    }
 
+    fn is_digit(ch: Option<char>) -> bool {
+        match ch {
+            Some(ch) => ch.is_ascii_digit(),
+            None => false
+        }
+    }
     fn string(&mut self) -> Result<(), LoxError> { 
         while let Some(ch) = self.peek() {
             match ch {
