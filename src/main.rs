@@ -39,7 +39,7 @@ fn run_file(path: &str) {
 }
 fn run_prompt() {
     print!("> ");
-    stdout().flush();
+    let _ = stdout().flush();
    
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
@@ -58,7 +58,7 @@ fn run_prompt() {
             break;
         }
     print!("> ");
-    stdout().flush();
+    let _ = stdout().flush();
     }
 }
 
