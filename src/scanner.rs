@@ -130,6 +130,10 @@ impl Scanner {
             self.advance();
         }
         let text : String = self.source[self.start..self.current].iter().collect();
+        if let Some(ttype) = Scanner::keyword(text.as_str()){
+            self.add_token(ttype);
+            return;
+        }
         self.add_token_object(TokenType::Identifier, Some(Literal::Identifier(text)))
     }
 
@@ -180,5 +184,25 @@ impl Scanner {
         self.add_token_object(TokenType::String, Some(Literal::String(value)));
         Ok(())
     }
-
+    fn keyword(identifier: &str) -> Option<TokenType> {
+        match identifier {
+            "and" => Some(TokenType::And),
+            "class" => Some(TokenType::Class),
+            "else" => Some(TokenType::Else),
+            "false" => Some(TokenType::False),
+            "for" => Some(TokenType::For),
+            "fun" => Some(TokenType::Fun),
+            "if" => Some(TokenType::If),
+            "nil" => Some(TokenType::Nil),
+            "or" => Some(TokenType::Or),
+            "print" => Some(TokenType::Print),
+            "return" => Some(TokenType::Return),
+            "super" => Some(TokenType::Super),
+            "this" => Some(TokenType::This),
+            "true" => Some(TokenType::True),
+            "var" => Some(TokenType::Var),
+            "while" => Some(TokenType::While),
+            _ => None
+        }
+    }
 }
