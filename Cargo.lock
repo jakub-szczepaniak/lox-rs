@@ -3,5 +3,9 @@
 version = 3
 
 [[package]]
+name = "lox-gen-ast"
+version = "0.1.0"
+
+[[package]]
 name = "lox-rs"
 version = "0.1.0"
