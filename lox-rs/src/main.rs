@@ -6,6 +6,7 @@ use scanner::Scanner;
 use error::LoxError;
 use std::env::args;
 use std::io::{BufRead, Write, stdout , self};
+mod expr;
 
 fn main() {
     let args: Vec<String> = args().collect();
