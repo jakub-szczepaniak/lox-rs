@@ -24,10 +24,9 @@ fn main() -> io::Result<()> {
 
 fn define_ast(output_dir: &str, base_name: &str, types: &[&str]) -> io::Result<()> {
     let path = format!("{}/{}.rs", output_dir, base_name.to_lowercase());
-    println!("Writing to {}", path);
     let mut file = std::fs::File::create(path).unwrap();
     let mut tree_types = Vec::<TreeType>::new();
-    write!(file, "use crate::error::*;\n")?;
+    writeln!(file, "use crate::error::*;")?;
 
     write!(file, "use crate::token::*;\n")?;
 
@@ -61,24 +60,24 @@ fn define_ast(output_dir: &str, base_name: &str, types: &[&str]) -> io::Result<(
         write!(file,"}}\n\n")?;
     }
 
-    write!(file, "pub trait Visitor<T> {{\n")?;
+    writeln!(file, "pub trait ExprVisitor<T> {{")?;
 
     for t in &tree_types {
-        write!(file, "    fn visit_{}_{}(&self, expr: &{}) -> Result<T, LoxError> {{}}\n",
+        writeln!(file, "    fn visit_{}_{}(&self, expr: &{}) -> Result<T, LoxError> {{}}",
     t.base_class.to_lowercase(),
     base_name.to_lowercase(),
     t.class_name)?;
 
     }
 
-    write!(file,"}}\n\n")?;
+    writeln!(file,"}}\n")?;
 
     for t in &tree_types {
-        write!(file, "impl {} {{\n", t.class_name)?;
-        write!(file, "    pub fn accept<T>(&self, visitor: &dyn {}Visitor<T>) -> Result<T, LoxError> {{\n", base_name);
-        write!(file, "        vistor.visit_{}_{}(self)\n", t.base_class.to_lowercase(), base_name.to_lowercase())?;
-        write!(file, "    }}\n")?;
-        write!(file, "}}\n\n")?;
+        writeln!(file, "impl {} {{", t.class_name)?;
+        writeln!(file, "    pub fn accept<T>(&self, visitor: &dyn {}Visitor<T>) -> Result<T, LoxError> {{", base_name);
+        writeln!(file, "        visitor.visit_{}_{}(self)", t.base_class.to_lowercase(), base_name.to_lowercase())?;
+        writeln!(file, "    }}")?;
+        writeln!(file, "}}\n")?;
     }
     Ok(())
 }
