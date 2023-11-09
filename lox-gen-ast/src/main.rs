@@ -13,6 +13,7 @@ fn main() -> io::Result<()> {
         std::process::exit(64);
     }
     let output_dir = &args[1];
+
     define_ast(output_dir, "Expr", &[
         "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
         "Grouping : Box<Expr> expression",
