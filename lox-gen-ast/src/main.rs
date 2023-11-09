@@ -73,6 +73,31 @@ fn prepare_enum(mut file: &std::fs::File, tree_types: &Vec<TreeType>, base_name:
         writeln!(file,"    {}({}),", t.base_class, t.class_name)?;
     }
     writeln!(file,"}}\n")?;
+    
+    writeln!(file,"impl {base_name} {{")?;
+
+    writeln!(file,"    pub fn accept<T>(&self, visitor: &dyn {base_name}Visitor<T>) -> Result<T, LoxError> {{")?;
+
+    writeln!(file,"        match self {{")?;
+
+    for t in tree_types {
+        writeln!(file, 
+            "        {base_name}::{base_class}({class_name}) => visitor.visit_{base_class_lc}_{base_name_lc}({class_name}),",
+            base_name = base_name,
+            base_class = t.base_class,
+            class_name = t.class_name,
+            base_class_lc = t.base_class.to_lowercase(),
+            base_name_lc = base_name.to_lowercase(),
+            )?; 
+    
+    }
+
+    writeln!(file,"        }}")?;
+
+
+    writeln!(file,"    }}")?;
+    writeln!(file,"}}\n")?;
+    
     Ok(())
 }
 
