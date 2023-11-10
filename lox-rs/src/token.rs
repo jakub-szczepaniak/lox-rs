@@ -13,10 +13,10 @@ pub enum Literal {
 
 #[derive(Debug)]
 pub struct Token {
-    ttype: TokenType,
-    lexeme: String,
-    line: usize,
-    literal: Option<Literal>,
+   pub ttype: TokenType,
+   pub lexeme: String,
+   pub line: usize,
+   pub literal: Option<Literal>,
 }
 
 impl Token {
