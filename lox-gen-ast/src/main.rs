@@ -17,7 +17,7 @@ fn main() -> io::Result<()> {
     define_ast(output_dir, "Expr", &[
         "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
         "Grouping : Box<Expr> expression",
-        "Literal  : Literal value",
+        "Literal  : Option<Literal> value",
         "Unary    : Token operator, Box<Expr> right",
     ])?;
     Ok(())
@@ -105,7 +105,7 @@ fn prepare_structs(mut file: &std::fs::File, tree_types: &Vec<TreeType>) -> Resu
     for t in tree_types {
         writeln!(file, "pub struct {} {{", t.class_name)?;
         for field in &t.fields {
-            write!(file, "    {}", field)?;
+            write!(file, "   pub {}", field)?;
         }
         writeln!(file,"}}\n")?;
     }
