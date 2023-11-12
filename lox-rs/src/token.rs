@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::token_type::TokenType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Literal {
     String(String),
     Identifier(String),
@@ -11,7 +11,7 @@ pub enum Literal {
     Nil,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
    pub ttype: TokenType,
    pub lexeme: String,

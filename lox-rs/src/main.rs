@@ -1,6 +1,7 @@
 mod error;
 mod token_type;
 mod token;
+mod parser;
 mod scanner;
 use scanner::Scanner;
 use error::LoxError;
