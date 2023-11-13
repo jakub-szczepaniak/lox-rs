@@ -5,7 +5,7 @@ use crate::expr::*;
 
 
 pub struct Parser {
-    tokens: Vec<Token>,
+    pub tokens: Vec<Token>,
     current: usize
 }
 
@@ -14,7 +14,7 @@ impl Parser {
         Parser { tokens, current: 0 }
     }
 
-    fn expression(&mut self) -> Result<Expr, LoxError> {
+   pub fn expression(&mut self) -> Result<Expr, LoxError> {
         self.equality()
     }
     
@@ -84,7 +84,7 @@ impl Parser {
             let right = self.unary()?;
             return Ok(Expr::Unary(ExprUnary { operator, right: Box::new(right) }))
         }
-        Ok(self.primary()?)
+        self.primary()
     }
     
     fn primary(&mut self) -> Result<Expr,LoxError> {
@@ -92,7 +92,7 @@ impl Parser {
            let tok = self.previous();
             match &tok.literal {
                 Some(value) => {
-                    return Ok(Expr::Literal(ExprLiteral { value: Some(*value) }))
+                    return Ok(Expr::Literal(ExprLiteral { value: Some(value.clone()) }))
                 }
                 _ => {}
             }
@@ -101,7 +101,7 @@ impl Parser {
         if self.is_match(&[TokenType::LeftParen]) {
             let expr = self.expression()?;
 
-            self.consume(TokenType::RightParen, "Expect ')' after expression".to_string());
+            self.consume(TokenType::RightParen, "Expect ')' after expression".to_string())?;
             return Ok(Expr::Grouping(ExprGrouping { expression: Box::new(expr) }));
         }
         Err(LoxError::error(0, "failed parsing primary tokens".to_string()))
@@ -124,7 +124,7 @@ impl Parser {
 
     fn is_match(&mut self, types: &[TokenType]) -> bool {
         for ttype in types{
-             if self.check(*ttype) {
+             if self.check(ttype.clone()) {
                 self.advance();
                 return true;
              }

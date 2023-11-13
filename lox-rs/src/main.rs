@@ -7,6 +7,7 @@ use scanner::Scanner;
 use error::LoxError;
 use std::env::args;
 use std::io::{BufRead, Write, stdout , self};
+use std::str::ParseBoolError;
 mod expr;
 
 fn main() {
@@ -67,6 +68,8 @@ fn run_prompt() {
 fn run(source: String) -> Result<(),LoxError> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
+    let mut parser = parser::Parser::new(tokens.clone());
+    let expr = parser.expression();
     for token in tokens {
         println!("{:?}", token);
     }
