@@ -1,16 +1,15 @@
-use lox_rs::expr::*;
 use lox_rs::error::*;
+use lox_rs::expr::*;
 use lox_rs::token::*;
 use lox_rs::token_type::TokenType;
 
-struct AstPrinter; 
+struct AstPrinter;
 
 impl AstPrinter {
     fn print(&self, expr: &Expr) -> Result<String, LoxError> {
         expr.accept(self)
-
     }
-    fn parentesize(&self, name: &str,  exprs: &[&Expr]) -> Result<String, LoxError> {
+    fn parentesize(&self, name: &str, exprs: &[&Expr]) -> Result<String, LoxError> {
         let mut result = String::new();
 
         result.push('(');
@@ -22,13 +21,12 @@ impl AstPrinter {
         result.push(')');
 
         Ok(result)
-
     }
 }
 
 impl ExprVisitor<String> for AstPrinter {
     fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<String, LoxError> {
-          self.parentesize(&expr.operator.lexeme, &[&expr.left, &expr.right])
+        self.parentesize(&expr.operator.lexeme, &[&expr.left, &expr.right])
     }
 
     fn visit_grouping_expr(&self, expr: &ExprGrouping) -> Result<String, LoxError> {
@@ -40,7 +38,7 @@ impl ExprVisitor<String> for AstPrinter {
             match value {
                 Literal::Boolean(a) => {
                     if *a {
-                       Ok("True".to_string())
+                        Ok("True".to_string())
                     } else {
                         Ok("False".to_string())
                     }
@@ -48,7 +46,7 @@ impl ExprVisitor<String> for AstPrinter {
                 Literal::String(a) => Ok(a.to_string()),
                 Literal::Nil => Ok("nil".to_string()),
                 Literal::Number(a) => Ok(a.to_string()),
-                Literal::Identifier(a) => Ok(a.to_string())
+                Literal::Identifier(a) => Ok(a.to_string()),
             }
         } else {
             Ok("nil".to_string())
@@ -61,34 +59,28 @@ impl ExprVisitor<String> for AstPrinter {
 }
 
 fn main() {
-    let expression = Expr::Binary(
-        ExprBinary { 
-            left: Box::new(Expr::Literal(
-                ExprLiteral { 
-                    value: Some(Literal::Number(43.0))
-                    
-             })), 
-            operator: Token {
-                ttype: TokenType::Plus,
-                lexeme: "+".to_string(),
-                line: 0, 
-                literal: None
-            }, right:  Box::new(Expr::Literal(
-                ExprLiteral { 
-                    value: Some(Literal::Number(43.0))
-                    
-             })), 
-            }
-        );
+    let expression = Expr::Binary(ExprBinary {
+        left: Box::new(Expr::Literal(ExprLiteral {
+            value: Some(Literal::Number(43.0)),
+        })),
+        operator: Token {
+            ttype: TokenType::Plus,
+            lexeme: "+".to_string(),
+            line: 0,
+            literal: None,
+        },
+        right: Box::new(Expr::Literal(ExprLiteral {
+            value: Some(Literal::Number(43.0)),
+        })),
+    });
     let printer = AstPrinter;
-    let result = printer.print(&expression); 
+    let result = printer.print(&expression);
     match result {
         Ok(result) => {
-            println!("{}",result)
-        },
+            println!("{}", result)
+        }
         Err(e) => {
             println!("Error printing the tree :{e}");
         }
-    } ;
-        
+    };
 }

@@ -15,6 +15,5 @@ impl LoxError {
     }
     pub fn report(&self, loc: String) {
         println!("[{}:{}] Error: {}", self.line, loc, self.message);
-    }    
+    }
 }
-

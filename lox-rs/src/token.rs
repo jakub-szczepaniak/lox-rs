@@ -13,10 +13,10 @@ pub enum Literal {
 
 #[derive(Debug, Clone)]
 pub struct Token {
-   pub ttype: TokenType,
-   pub lexeme: String,
-   pub line: usize,
-   pub literal: Option<Literal>,
+    pub ttype: TokenType,
+    pub lexeme: String,
+    pub line: usize,
+    pub literal: Option<Literal>,
 }
 
 impl Token {
@@ -33,13 +33,17 @@ impl Token {
             ttype: TokenType::Eof,
             lexeme: "".to_string(),
             line,
-            literal: None,       
+            literal: None,
         }
     }
 }
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{:}]{:?} {} {:?}", self.line, self.ttype, self.lexeme, self.literal)
+        write!(
+            f,
+            "[{:}]{:?} {} {:?}",
+            self.line, self.ttype, self.lexeme, self.literal
+        )
     }
 }

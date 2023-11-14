@@ -1,22 +1,22 @@
 mod error;
-mod token_type;
-mod token;
 mod parser;
 mod scanner;
-use scanner::Scanner;
+mod token;
+mod token_type;
 use error::LoxError;
+use scanner::Scanner;
 use std::env::args;
-use std::io::{BufRead, Write, stdout , self};
+use std::io::{self, stdout, BufRead, Write};
 use std::str::ParseBoolError;
 mod expr;
 
 fn main() {
     let args: Vec<String> = args().collect();
-    
+
     match args.len() {
         1 => run_prompt(),
         2 => run_file(&args[1]),
-        _ => { 
+        _ => {
             println!("Usage: lox-rs [script]");
             std::process::exit(64);
         }
@@ -28,11 +28,10 @@ fn run_file(path: &str) {
         Ok(contents) => contents,
         Err(e) => {
             println!("Error reading file: {}", e);
-            std::process::exit(64); 
+            std::process::exit(64);
         }
     };
-    
-    
+
     match run(contents) {
         Ok(_) => (),
         Err(_e) => {
@@ -43,29 +42,28 @@ fn run_file(path: &str) {
 fn run_prompt() {
     print!("> ");
     let _ = stdout().flush();
-   
+
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         if let Ok(line) = line {
             if line.is_empty() {
                 continue;
-            } 
+            }
             match run(line) {
                 Ok(_) => (),
                 Err(_e) => {
                     // error was already reported in scanner
                 }
             }
-
         } else {
             break;
         }
-    print!("> ");
-    let _ = stdout().flush();
+        print!("> ");
+        let _ = stdout().flush();
     }
 }
 
-fn run(source: String) -> Result<(),LoxError> {
+fn run(source: String) -> Result<(), LoxError> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
     let mut parser = parser::Parser::new(tokens.clone());
@@ -75,8 +73,3 @@ fn run(source: String) -> Result<(),LoxError> {
     }
     Ok(())
 }
-
-
-
-
-
