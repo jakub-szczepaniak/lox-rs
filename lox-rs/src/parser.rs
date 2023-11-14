@@ -90,13 +90,9 @@ impl Parser {
     fn primary(&mut self) -> Result<Expr,LoxError> {
         if self.is_match(&[TokenType::Identifier]) {
            let tok = self.previous();
-            match &tok.literal {
-                Some(value) => {
-                    return Ok(Expr::Literal(ExprLiteral { value: Some(value.clone()) }))
-                }
-                _ => {}
-            }
-
+           if let Some(value) = &tok.literal {
+            return Ok(Expr::Literal(ExprLiteral { value: Some(value.clone()) }))
+           }
         }
         if self.is_match(&[TokenType::LeftParen]) {
             let expr = self.expression()?;
