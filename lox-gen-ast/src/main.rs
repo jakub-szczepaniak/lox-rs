@@ -97,7 +97,7 @@ fn prepare_enum(
             "        {base_name}::{base_class}({class_name}) => visitor.visit_{base_class_lc}_{base_name_lc}({class_name}),",
             base_name = base_name,
             base_class = t.base_class,
-            class_name = t.class_name,
+            class_name = format!("{}_{}",t.base_class.to_lowercase(), base_name.to_lowercase() ),
             base_class_lc = t.base_class.to_lowercase(),
             base_name_lc = base_name.to_lowercase(),
             )?;
@@ -160,7 +160,7 @@ fn prepare_visitors(
             base_name.to_lowercase()
         )?;
         writeln!(file, "    }}")?;
-        writeln!(file, "}}\n")?;
+        writeln!(file, "}}")?;
     }
     Ok(())
 }
