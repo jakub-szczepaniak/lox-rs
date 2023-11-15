@@ -1,6 +1,6 @@
 use std::{fmt, thread::yield_now};
 
-use crate::token::Token;
+use crate::{token::Token, token_type::TokenType};
 pub struct LoxError {
     pub token: Option<Token>,
     pub message: String,
@@ -25,6 +25,14 @@ impl LoxError {
         
     }
     pub fn report(&self, loc: String) {
-        println!("[{}:{}] Error: {}", self.line, loc, self.message);
+        if let Some(token) = &self.token {
+            if token.ttype == TokenType::Eof {
+                eprintln!("{} at end: {}", token.line, self.message)
+            } else {
+                eprintln!("{} at '{}' : {} ", token.line, token.lexeme, self.message)
+            }
+        } else {
+            eprintln!("[line {}:{}] Error:{}", self.line, loc, self.message)            
+        }
     }
 }
