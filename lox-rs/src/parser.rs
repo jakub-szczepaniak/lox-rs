@@ -121,8 +121,8 @@ impl Parser {
                 expression: Box::new(expr),
             }));
         }
-        Err(LoxError::error(
-            0,
+        Err(LoxError::parse_error(
+            self.peek(),
             "failed parsing primary tokens".to_string(),
         ))
     }
@@ -159,12 +159,12 @@ impl Parser {
         if self.is_at_end() {
             false
         } else {
-            self.peek().ttype == ttype
+            self.peek().is(ttype)
         }
     }
 
     fn is_at_end(&self) -> bool {
-        self.peek().ttype == TokenType::Eof
+        self.peek().is(TokenType::Eof)
     }
 
     fn peek(&self) -> &Token {

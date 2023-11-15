@@ -13,7 +13,7 @@ pub enum Literal {
 
 #[derive(Debug, Clone)]
 pub struct Token {
-    pub ttype: TokenType,
+    ttype: TokenType,
     pub lexeme: String,
     pub line: usize,
     pub literal: Option<Literal>,
@@ -28,6 +28,11 @@ impl Token {
             literal,
         }
     }
+
+    pub fn is(&self, ttype: TokenType) -> bool {
+        self.ttype == ttype
+    }
+
     pub fn eof(line: usize) -> Token {
         Token {
             ttype: TokenType::Eof,
