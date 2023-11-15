@@ -131,9 +131,12 @@ impl Parser {
         if self.check(ttype) {
             Ok(self.advance().clone())
         } else {
-            let p = self.peek();
-            Err(LoxError::error(p.line, message))
+            Err(Parser::error(self.peek(), message))
         }
+    }
+
+    fn error(token: &Token, message: String) -> LoxError {
+        LoxError::parse_error(token, message )
     }
 
     fn advance(&mut self) -> &Token {
