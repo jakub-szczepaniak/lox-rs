@@ -7,7 +7,6 @@ use error::LoxError;
 use scanner::Scanner;
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
-use std::str::ParseBoolError;
 mod expr;
 
 fn main() {

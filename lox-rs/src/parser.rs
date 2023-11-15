@@ -8,6 +8,16 @@ pub struct Parser {
     current: usize,
 }
 
+#[cfg(test)]
+fn test_simple_token_sequence() {
+    let tokens = vec![
+        Token::new(TokenType::LeftBrace, "(".to_string(), 0, None)];
+    let mut  parser = Parser::new(tokens);
+    let result = parser.expression();
+
+}
+
+
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Parser {
         Parser { tokens, current: 0 }
@@ -144,20 +154,14 @@ impl Parser {
     }
     fn check(&self, ttype: TokenType) -> bool {
         if self.is_at_end() {
-            return false;
-        }
-
-        match &self.peek().ttype {
-            ttype => true,
-            _ => false,
+            false
+        } else {
+            self.peek().ttype == ttype
         }
     }
 
     fn is_at_end(&self) -> bool {
-        match self.peek().ttype {
-            TokenType::Eof => true,
-            _ => false,
-        }
+        self.peek().ttype == TokenType::Eof
     }
 
     fn peek(&self) -> &Token {
