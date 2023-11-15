@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, thread::yield_now};
 
 use crate::token::Token;
 pub struct LoxError {
@@ -14,10 +14,15 @@ impl fmt::Display for LoxError {
 }
 impl LoxError {
     pub fn error(line: usize, message: String) -> LoxError {
-        LoxError { token: None, message, line }
+        let err = LoxError { token: None, message, line };
+        err.report("".to_string());
+        err
     }
     pub fn parse_error(token: &Token, message: String) -> LoxError {
-        LoxError { token: Some(token.clone()), message, line: token.line }
+        let err = LoxError { token: Some(token.clone()), message, line: token.line };
+        err.report("".to_string());
+        err
+        
     }
     pub fn report(&self, loc: String) {
         println!("[{}:{}] Error: {}", self.line, loc, self.message);

@@ -28,7 +28,6 @@ impl Scanner {
             match self.scan_token() {
                 Ok(_) => (),
                 Err(e) => {
-                    e.report(self.current.to_string());
                     had_error = Some(e);
                 }
             }
