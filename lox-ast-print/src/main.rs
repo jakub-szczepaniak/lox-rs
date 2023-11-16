@@ -63,12 +63,12 @@ fn main() {
         left: Box::new(Expr::Literal(ExprLiteral {
             value: Some(Literal::Number(43.0)),
         })),
-        operator: Token {
-            ttype: TokenType::Plus,
-            lexeme: "+".to_string(),
-            line: 0,
-            literal: None,
-        },
+        operator: Token::new (
+            TokenType::Plus,
+            "+".to_string(),
+            0,
+            None
+        ),
         right: Box::new(Expr::Literal(ExprLiteral {
             value: Some(Literal::Number(43.0)),
         })),

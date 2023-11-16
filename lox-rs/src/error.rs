@@ -1,4 +1,4 @@
-use std::{fmt, thread::yield_now};
+use std::fmt;
 
 use crate::{token::Token, token_type::TokenType};
 pub struct LoxError {

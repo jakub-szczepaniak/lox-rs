@@ -8,16 +8,6 @@ pub struct Parser {
     current: usize,
 }
 
-#[cfg(test)]
-fn test_simple_token_sequence() {
-    let tokens = vec![
-        Token::new(TokenType::LeftBrace, "(".to_string(), 0, None)];
-    let mut  parser = Parser::new(tokens);
-    let result = parser.expression();
-
-}
-
-
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Parser {
         Parser { tokens, current: 0 }
@@ -137,6 +127,29 @@ impl Parser {
 
     fn error(token: &Token, message: String) -> LoxError {
         LoxError::parse_error(token, message )
+    }
+
+    fn synchronize(&mut self) {
+        self.advance();
+
+        while !self.is_at_end() {
+            if self.previous().is(TokenType::Eof) {
+                return;
+            }
+            if matches!(
+                self.peek().token_type(), TokenType::Class |
+                TokenType::Fun |
+                TokenType::Var |
+                TokenType::For |
+                TokenType::If  |
+                TokenType::While |
+                TokenType::Print |
+                TokenType::Return
+            ) {
+                return;
+            }
+            self.advance();
+        }
     }
 
     fn advance(&mut self) -> &Token {

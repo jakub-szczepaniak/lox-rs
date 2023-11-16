@@ -33,6 +33,10 @@ impl Token {
         self.ttype == ttype
     }
 
+    pub fn token_type(&self) -> TokenType {
+        self.ttype.clone()
+    }
+
     pub fn eof(line: usize) -> Token {
         Token {
             ttype: TokenType::Eof,
