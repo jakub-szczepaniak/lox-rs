@@ -13,6 +13,13 @@ impl Parser {
         Parser { tokens, current: 0 }
     }
 
+    pub fn parse(&mut self) -> Option<Expr> {
+        match self.expression() {
+            Ok(expr) => Some(expr),
+            Err(_) => None
+        }
+    }
+
     pub fn expression(&mut self) -> Result<Expr, LoxError> {
         self.equality()
     }
@@ -92,7 +99,7 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expr, LoxError> {
-        if self.is_match(&[TokenType::Identifier]) {
+        if self.is_match(&[TokenType::Identifier, TokenType::String, TokenType::Number]) {
             let tok = self.previous();
             if let Some(value) = &tok.literal {
                 return Ok(Expr::Literal(ExprLiteral {
@@ -133,7 +140,7 @@ impl Parser {
         self.advance();
 
         while !self.is_at_end() {
-            if self.previous().is(TokenType::Eof) {
+            if self.previous().is(TokenType::Semicolon) {
                 return;
             }
             if matches!(

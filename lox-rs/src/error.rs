@@ -1,6 +1,8 @@
 use std::fmt;
 
 use crate::{token::Token, token_type::TokenType};
+
+#[derive(Debug)]
 pub struct LoxError {
     pub token: Option<Token>,
     pub message: String,

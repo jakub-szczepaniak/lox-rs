@@ -1,12 +1,12 @@
-use lox_rs::error::*;
-use lox_rs::expr::*;
-use lox_rs::token::*;
-use lox_rs::token_type::TokenType;
+use crate::error::*;
+use crate::expr::*;
+use crate::token::*;
+use crate::token_type::TokenType;
 
-struct AstPrinter;
+pub struct AstPrinter;
 
 impl AstPrinter {
-    fn print(&self, expr: &Expr) -> Result<String, LoxError> {
+    pub fn print(&self, expr: &Expr) -> Result<String, LoxError> {
         expr.accept(self)
     }
     fn parentesize(&self, name: &str, exprs: &[&Expr]) -> Result<String, LoxError> {

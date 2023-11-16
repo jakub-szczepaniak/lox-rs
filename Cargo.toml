@@ -1,4 +1,4 @@
 [workspace]
-members = ["lox-rs", "lox-gen-ast", "lox-ast-print"]
+members = ["lox-rs", "lox-gen-ast"]
 default-members = ["lox-rs"]
 resolver = "2"

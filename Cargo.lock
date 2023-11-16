@@ -3,13 +3,6 @@
 version = 3
 
 [[package]]
-name = "lox-ast-print"
-version = "0.1.0"
-dependencies = [
- "lox-rs",
-]
-
-[[package]]
 name = "lox-gen-ast"
 version = "0.1.0"
 dependencies = [
