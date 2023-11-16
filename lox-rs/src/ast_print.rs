@@ -1,7 +1,6 @@
 use crate::error::*;
 use crate::expr::*;
 use crate::token::*;
-use crate::token_type::TokenType;
 
 pub struct AstPrinter;
 
@@ -58,29 +57,3 @@ impl ExprVisitor<String> for AstPrinter {
     }
 }
 
-fn main() {
-    let expression = Expr::Binary(ExprBinary {
-        left: Box::new(Expr::Literal(ExprLiteral {
-            value: Some(Literal::Number(43.0)),
-        })),
-        operator: Token::new (
-            TokenType::Plus,
-            "+".to_string(),
-            0,
-            None
-        ),
-        right: Box::new(Expr::Literal(ExprLiteral {
-            value: Some(Literal::Number(43.0)),
-        })),
-    });
-    let printer = AstPrinter;
-    let result = printer.print(&expression);
-    match result {
-        Ok(result) => {
-            println!("{}", result)
-        }
-        Err(e) => {
-            println!("Error printing the tree :{e}");
-        }
-    };
-}
