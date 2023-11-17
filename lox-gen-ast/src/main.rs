@@ -51,6 +51,7 @@ fn define_ast(output_dir: &str, base_name: &str, types: &[&str]) -> io::Result<(
 fn prepare_imports(mut file: &std::fs::File) -> Result<(), io::Error> {
     writeln!(file, "use crate::error::*;")?;
     writeln!(file, "use crate::token::*;")?;
+    writeln!(file, "use crate::literal::Literal;")?;
     Ok(())
 }
 

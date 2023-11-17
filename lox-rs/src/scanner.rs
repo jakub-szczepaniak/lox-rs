@@ -1,5 +1,5 @@
 use crate::error::LoxError;
-use crate::token::Literal;
+use crate::literal::Literal;
 use crate::token::Token;
 use crate::token_type::TokenType;
 pub struct Scanner {

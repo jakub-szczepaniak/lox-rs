@@ -10,6 +10,9 @@ use scanner::Scanner;
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 mod expr;
+mod literal;
+
+
 
 fn main() {
     let args: Vec<String> = args().collect();

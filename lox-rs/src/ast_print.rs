@@ -1,6 +1,6 @@
 use crate::error::*;
 use crate::expr::*;
-use crate::token::*;
+use crate::literal::*;
 
 pub struct AstPrinter;
 
