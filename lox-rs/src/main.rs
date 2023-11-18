@@ -1,18 +1,17 @@
+mod ast_print;
 mod error;
 mod parser;
 mod scanner;
 mod token;
 mod token_type;
-mod ast_print;
 use ast_print::AstPrinter;
 use error::LoxError;
 use scanner::Scanner;
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 mod expr;
+mod interpreter;
 mod literal;
-
-
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -73,11 +72,15 @@ fn run(source: String) -> Result<(), LoxError> {
     let mut parser = parser::Parser::new(tokens.clone());
 
     match parser.parse() {
-        None => {Err(LoxError { token: None, message: "Error when parsing".to_string(), line: 0 })},
+        None => Err(LoxError {
+            token: None,
+            message: "Error when parsing".to_string(),
+            line: 0,
+        }),
         Some(expr) => {
             let printer = AstPrinter {};
             println!("PrintAST:\n {}", printer.print(&expr).unwrap());
             Ok(())
-       }
+        }
     }
-}    
+}

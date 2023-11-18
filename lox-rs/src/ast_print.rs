@@ -56,4 +56,3 @@ impl ExprVisitor<String> for AstPrinter {
         self.parentesize("unary", &[&expr.right])
     }
 }
-

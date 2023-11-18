@@ -16,7 +16,7 @@ impl Parser {
     pub fn parse(&mut self) -> Option<Expr> {
         match self.expression() {
             Ok(expr) => Some(expr),
-            Err(_) => None
+            Err(_) => None,
         }
     }
 
@@ -133,7 +133,7 @@ impl Parser {
     }
 
     fn error(token: &Token, message: String) -> LoxError {
-        LoxError::parse_error(token, message )
+        LoxError::parse_error(token, message)
     }
 
     fn synchronize(&mut self) {
@@ -144,14 +144,15 @@ impl Parser {
                 return;
             }
             if matches!(
-                self.peek().token_type(), TokenType::Class |
-                TokenType::Fun |
-                TokenType::Var |
-                TokenType::For |
-                TokenType::If  |
-                TokenType::While |
-                TokenType::Print |
-                TokenType::Return
+                self.peek().token_type(),
+                TokenType::Class
+                    | TokenType::Fun
+                    | TokenType::Var
+                    | TokenType::For
+                    | TokenType::If
+                    | TokenType::While
+                    | TokenType::Print
+                    | TokenType::Return
             ) {
                 return;
             }
