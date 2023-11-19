@@ -18,7 +18,7 @@ impl ExprVisitor<Literal> for Interpreter {
         if let Some(value) = &expr.value {
             Ok(value.clone())
         } else {
-            Err(LoxError::error(0, "Cannot evaluate expression".to_string()))
+            Err(LoxError::error(0, "Cannot evaluate expression"))
         }
     }
 
@@ -30,7 +30,7 @@ impl ExprVisitor<Literal> for Interpreter {
                 Literal::Number(x) => Ok(Literal::Number(-x)),
                 _ => Ok(Literal::Nil),
             },
-            TokenType::Bang => Ok(Literal::Boolean(self.is_truthy(right))),
+            TokenType::Bang => Ok(Literal::Boolean(self.is_truthy(&right))),
             _ => Err(LoxError {
                 token: Some(expr.operator.clone()),
                 message: "Mismatch type to operator".to_string(),
@@ -45,7 +45,7 @@ impl Interpreter {
         expr.accept(self)
     }
 
-    fn is_truthy(&self, literal: Literal) -> bool {
+    fn is_truthy(&self, literal: &Literal) -> bool {
         !matches!(literal, Literal::Nil | Literal::Boolean(false))
     }
 }

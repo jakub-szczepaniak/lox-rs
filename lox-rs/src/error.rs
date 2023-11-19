@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{arch::x86_64::_mm256_permutevar8x32_epi32, fmt};
 
 use crate::{token::Token, token_type::TokenType};
 
@@ -15,25 +15,25 @@ impl fmt::Display for LoxError {
     }
 }
 impl LoxError {
-    pub fn error(line: usize, message: String) -> LoxError {
+    pub fn error(line: usize, message: &str) -> LoxError {
         let err = LoxError {
             token: None,
-            message,
+            message: message.to_string(),
             line,
         };
-        err.report("".to_string());
+        err.report("");
         err
     }
-    pub fn parse_error(token: &Token, message: String) -> LoxError {
+    pub fn parse_error(token: &Token, message: &str) -> LoxError {
         let err = LoxError {
             token: Some(token.clone()),
-            message,
+            message: message.to_string(),
             line: token.line,
         };
-        err.report("".to_string());
+        err.report("");
         err
     }
-    pub fn report(&self, loc: String) {
+    pub fn report(&self, loc: &str) {
         if let Some(token) = &self.token {
             if token.is(TokenType::Eof) {
                 eprintln!("{} at end: {}", token.line, self.message)

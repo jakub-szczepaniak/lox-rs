@@ -100,12 +100,7 @@ impl Scanner {
             '"' => self.string()?,
             '0'..='9' => self.number()?,
             _ if c.is_ascii_alphabetic() || c == '_' => self.identifier(),
-            _ => {
-                return Err(LoxError::error(
-                    self.line,
-                    "Unexpected character".to_string(),
-                ))
-            }
+            _ => return Err(LoxError::error(self.line, "Unexpected character")),
         }
         Ok(())
     }
@@ -198,10 +193,7 @@ impl Scanner {
             self.advance();
         }
         if self.is_at_end() {
-            return Err(LoxError::error(
-                self.line,
-                "Unterminated string".to_string(),
-            ));
+            return Err(LoxError::error(self.line, "Unterminated string"));
         }
 
         self.advance();

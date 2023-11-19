@@ -110,21 +110,18 @@ impl Parser {
         if self.is_match(&[TokenType::LeftParen]) {
             let expr = self.expression()?;
 
-            self.consume(
-                TokenType::RightParen,
-                "Expect ')' after expression".to_string(),
-            )?;
+            self.consume(TokenType::RightParen, "Expect ')' after expression")?;
             return Ok(Expr::Grouping(ExprGrouping {
                 expression: Box::new(expr),
             }));
         }
         Err(LoxError::parse_error(
             self.peek(),
-            "failed parsing primary tokens".to_string(),
+            "failed parsing primary tokens",
         ))
     }
 
-    fn consume(&mut self, ttype: TokenType, message: String) -> Result<Token, LoxError> {
+    fn consume(&mut self, ttype: TokenType, message: &str) -> Result<Token, LoxError> {
         if self.check(ttype) {
             Ok(self.advance().clone())
         } else {
@@ -132,7 +129,7 @@ impl Parser {
         }
     }
 
-    fn error(token: &Token, message: String) -> LoxError {
+    fn error(token: &Token, message: &str) -> LoxError {
         LoxError::parse_error(token, message)
     }
 
