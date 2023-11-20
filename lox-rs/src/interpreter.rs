@@ -61,13 +61,17 @@ mod tests {
         Box::new(Expr::Literal(ExprLiteral { value: Some(literal) }))
     }
     
+    fn make_token_operator(ttype: TokenType, lexeme: &str) -> Token {
+        Token::new(ttype, lexeme.to_string(), 0, None)
+    }
+
+
     #[test]
     fn test_the_unary_minus_for_number() {
         let interp = Interpreter {};
         let unary_minus = Expr::Unary(ExprUnary {
-            operator: Token::new(TokenType::Minus, "-".to_string(), 0, None),
-            right: make_literal(Literal::Number(42.0)),
-        });
+            operator: make_token_operator(TokenType::Minus, "-"),
+            right: make_literal(Literal::Number(42.0)),});
         let result = interp.evaluate(&unary_minus);
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Number(-42.0)))
@@ -77,7 +81,7 @@ mod tests {
     fn test_the_unary_minus_for_string() {
         let interp = Interpreter {};
         let unary_minus_string = Expr::Unary(ExprUnary {
-             operator: Token::new(TokenType::Minus, ".".to_string(), 0, None), 
+             operator: make_token_operator(TokenType::Minus, "."), 
              right: make_literal(Literal::String("some".to_string()))});
         
         let result = interp.evaluate(&unary_minus_string);
@@ -89,7 +93,7 @@ mod tests {
     fn test_unary_bang_true_result_false() {
         let interp = Interpreter {};
         let unary_bang_true = Expr::Unary(ExprUnary {
-             operator: Token::new(TokenType::Bang, "!".to_string(), 0, None ), 
+             operator: make_token_operator(TokenType::Bang, "!"), 
              right:  make_literal(Literal::Boolean(true))}) ;
         let result = interp.evaluate(&unary_bang_true);
         assert!(result.is_ok());
@@ -100,7 +104,7 @@ mod tests {
     fn test_unary_bang_false_result_true() {
         let interp = Interpreter {};
         let unary_bang_false = Expr::Unary(ExprUnary {
-            operator: Token::new(TokenType::Bang, "!".to_string(), 0, None),
+            operator: make_token_operator(TokenType::Bang, "!"),
             right: make_literal(Literal::Boolean(false)) });
   
         let result = interp.evaluate(&unary_bang_false);
@@ -113,7 +117,7 @@ mod tests {
   fn test_unary_bang_nil_result_true() {
         let interp = Interpreter {};    
         let unary_bang_nil = Expr::Unary(ExprUnary {
-            operator: Token::new(TokenType::Bang, "!".to_string(), 0, None),
+            operator: make_token_operator(TokenType::Bang, "!"),
             right: make_literal(Literal::Nil) });
    
         let result = interp.evaluate(&unary_bang_nil);
