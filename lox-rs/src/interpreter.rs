@@ -6,9 +6,22 @@ use crate::token_type::*;
 
 pub struct Interpreter {}
 
+
 impl ExprVisitor<Literal> for Interpreter {
     fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<Literal, LoxError> {
-        todo!()
+        let left = self.evaluate(&expr.left)?;
+        let right = self.evaluate(&expr.right)?;
+
+        match expr.operator.token_type() {
+            TokenType::Minus => {
+                match (left, right) {
+                    (Literal::Number(x),Literal::Number(y)) => Ok(Literal::Number(x-y)),
+                    _ => { todo!("not yet implemented")}
+                }
+            },
+            _ => { todo!("not implemented")} 
+
+        }
     }
     fn visit_grouping_expr(&self, expr: &ExprGrouping) -> Result<Literal, LoxError> {
         Ok(self.evaluate(&expr.expression).unwrap())
@@ -124,5 +137,17 @@ mod tests {
 
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+   }
+
+   #[test]
+   fn test_binary_substraction() {
+    let interp = Interpreter {};
+    let binary_minus = Expr::Binary(ExprBinary { 
+        left: make_literal(Literal::Number(13.0)), 
+        operator: make_token_operator(TokenType::Minus, "-"), 
+        right: make_literal(Literal::Number(12.0)) });
+    let result = interp.evaluate(&binary_minus);
+    assert!(result.is_ok());
+    assert_eq!(result.ok(), Some(Literal::Number(1.0)));
    }
 }
