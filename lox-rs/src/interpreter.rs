@@ -30,7 +30,7 @@ impl ExprVisitor<Literal> for Interpreter {
                 Literal::Number(x) => Ok(Literal::Number(-x)),
                 _ => Ok(Literal::Nil),
             },
-            TokenType::Bang => Ok(Literal::Boolean(self.is_truthy(&right))),
+            TokenType::Bang => Ok(Literal::Boolean(!self.is_truthy(&right))),
             _ => Err(LoxError {
                 token: Some(expr.operator.clone()),
                 message: "Mismatch type to operator".to_string(),
@@ -48,4 +48,74 @@ impl Interpreter {
     fn is_truthy(&self, literal: &Literal) -> bool {
         !matches!(literal, Literal::Nil | Literal::Boolean(false))
     }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use std::result;
+
+    use super::*;
+
+    #[test]
+    fn test_the_unary_minus_for_number() {
+        let interp = Interpreter {};
+        let unary_minus = Expr::Unary(ExprUnary {
+            operator: Token::new(TokenType::Minus, "-".to_string(), 0, None),
+            right: Box::new(Expr::Literal(ExprLiteral {
+                value: Some(Literal::Number(42.0)),
+            })),
+        });
+        let result = interp.evaluate(&unary_minus);
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Number(-42.0)))
+    }
+
+    #[test]
+    fn test_the_unary_minus_for_string() {
+        let interp = Interpreter {};
+        let unary_minus_string = Expr::Unary(ExprUnary {
+             operator: Token::new(TokenType::Minus, ".".to_string(), 0, None), 
+             right: Box::new(Expr::Literal(ExprLiteral { value: Some(Literal::String("abc".to_string())) })) });
+        
+        let result = interp.evaluate(&unary_minus_string);
+       assert!(result.is_ok());
+       assert_eq!(result.ok(), Some(Literal::Nil) );
+    }
+    
+    #[test]
+    fn test_unary_bang_true_result_false() {
+        let interp = Interpreter {};
+        let unary_bang_true = Expr::Unary(ExprUnary {
+             operator: Token::new(TokenType::Bang, "!".to_string(), 0, None ), 
+             right: Box::new(Expr::Literal(ExprLiteral { value: Some(Literal::Boolean(true)) })) });
+        let result = interp.evaluate(&unary_bang_true);
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(false)));
+    }
+    
+    #[test]
+    fn test_unary_bang_false_result_true() {
+        let interp = Interpreter {};
+        let unary_bang_false = Expr::Unary(ExprUnary {
+            operator: Token::new(TokenType::Bang, "!".to_string(), 0, None),
+            right: Box::new(Expr::Literal(ExprLiteral { value: Some(Literal::Boolean(false)) })) });
+        let result = interp.evaluate(&unary_bang_false);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+   }
+
+   #[test]
+  fn test_unary_bang_nil_result_true() {
+        let interp = Interpreter {};    
+        let unary_bang_nil = Expr::Unary(ExprUnary {
+            operator: Token::new(TokenType::Bang, "!".to_string(), 0, None),
+            right: Box::new(Expr::Literal(ExprLiteral { value: Some(Literal::Nil) })) });
+   
+        let result = interp.evaluate(&unary_bang_nil);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+   }
 }

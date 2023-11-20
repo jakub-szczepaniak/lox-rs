@@ -1,4 +1,4 @@
-use std::{arch::x86_64::_mm256_permutevar8x32_epi32, fmt};
+use std::fmt;
 
 use crate::{token::Token, token_type::TokenType};
 

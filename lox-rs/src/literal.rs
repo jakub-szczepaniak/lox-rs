@@ -1,6 +1,6 @@
 use std::fmt::{self};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
     String(String),
     Identifier(String),
