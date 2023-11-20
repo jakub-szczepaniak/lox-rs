@@ -53,18 +53,20 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
 
-    use std::result;
+    use std::{result, io::LineWriter};
 
     use super::*;
 
+    fn make_literal(literal: Literal) -> Box<Expr> {
+        Box::new(Expr::Literal(ExprLiteral { value: Some(literal) }))
+    }
+    
     #[test]
     fn test_the_unary_minus_for_number() {
         let interp = Interpreter {};
         let unary_minus = Expr::Unary(ExprUnary {
             operator: Token::new(TokenType::Minus, "-".to_string(), 0, None),
-            right: Box::new(Expr::Literal(ExprLiteral {
-                value: Some(Literal::Number(42.0)),
-            })),
+            right: make_literal(Literal::Number(42.0)),
         });
         let result = interp.evaluate(&unary_minus);
         assert!(result.is_ok());
@@ -76,7 +78,7 @@ mod tests {
         let interp = Interpreter {};
         let unary_minus_string = Expr::Unary(ExprUnary {
              operator: Token::new(TokenType::Minus, ".".to_string(), 0, None), 
-             right: Box::new(Expr::Literal(ExprLiteral { value: Some(Literal::String("abc".to_string())) })) });
+             right: make_literal(Literal::String("some".to_string()))});
         
         let result = interp.evaluate(&unary_minus_string);
        assert!(result.is_ok());
@@ -88,7 +90,7 @@ mod tests {
         let interp = Interpreter {};
         let unary_bang_true = Expr::Unary(ExprUnary {
              operator: Token::new(TokenType::Bang, "!".to_string(), 0, None ), 
-             right: Box::new(Expr::Literal(ExprLiteral { value: Some(Literal::Boolean(true)) })) });
+             right:  make_literal(Literal::Boolean(true))}) ;
         let result = interp.evaluate(&unary_bang_true);
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(false)));
@@ -99,7 +101,8 @@ mod tests {
         let interp = Interpreter {};
         let unary_bang_false = Expr::Unary(ExprUnary {
             operator: Token::new(TokenType::Bang, "!".to_string(), 0, None),
-            right: Box::new(Expr::Literal(ExprLiteral { value: Some(Literal::Boolean(false)) })) });
+            right: make_literal(Literal::Boolean(false)) });
+  
         let result = interp.evaluate(&unary_bang_false);
 
         assert!(result.is_ok());
@@ -111,7 +114,7 @@ mod tests {
         let interp = Interpreter {};    
         let unary_bang_nil = Expr::Unary(ExprUnary {
             operator: Token::new(TokenType::Bang, "!".to_string(), 0, None),
-            right: Box::new(Expr::Literal(ExprLiteral { value: Some(Literal::Nil) })) });
+            right: make_literal(Literal::Nil) });
    
         let result = interp.evaluate(&unary_bang_nil);
 
