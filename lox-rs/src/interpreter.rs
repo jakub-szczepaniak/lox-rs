@@ -75,8 +75,6 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
 
-    use std::{io::LineWriter, result};
-
     use super::*;
 
     fn make_literal(literal: Literal) -> Box<Expr> {
@@ -87,6 +85,14 @@ mod tests {
 
     fn make_token_operator(ttype: TokenType, lexeme: &str) -> Token {
         Token::new(ttype, lexeme.to_string(), 0, None)
+    }
+
+    fn make_binary_expression(left: Box<Expr>, right: Box<Expr>, operator: Token) -> Expr {
+        Expr::Binary(ExprBinary {
+            left,
+            operator,
+            right,
+        })
     }
 
     #[test]
@@ -157,11 +163,11 @@ mod tests {
     #[test]
     fn test_binary_substraction() {
         let interp = Interpreter {};
-        let binary_minus = Expr::Binary(ExprBinary {
-            left: make_literal(Literal::Number(13.0)),
-            operator: make_token_operator(TokenType::Minus, "-"),
-            right: make_literal(Literal::Number(14.0)),
-        });
+        let binary_minus = make_binary_expression(
+            make_literal(Literal::Number(13.0)),
+            make_literal(Literal::Number(14.0)),
+            make_token_operator(TokenType::Minus, "-"),
+        );
         let result = interp.evaluate(&binary_minus);
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Number(-1.0)));
@@ -170,11 +176,11 @@ mod tests {
     #[test]
     fn test_binary_division() {
         let interp = Interpreter {};
-        let binary_slash = Expr::Binary(ExprBinary {
-            left: make_literal(Literal::Number(10.0)),
-            operator: make_token_operator(TokenType::Slash, "/"),
-            right: make_literal(Literal::Number(2.0)),
-        });
+        let binary_slash = make_binary_expression(
+            make_literal(Literal::Number(10.0)),
+            make_literal(Literal::Number(2.0)),
+            make_token_operator(TokenType::Slash, "/"),
+        );
 
         let result = interp.evaluate(&binary_slash);
         assert!(result.is_ok());
@@ -183,11 +189,11 @@ mod tests {
     #[test]
     fn test_binary_division_by_zero() {
         let interp = Interpreter {};
-        let binary_slash_by_zero = Expr::Binary(ExprBinary {
-            left: make_literal(Literal::Number(42.0)),
-            operator: make_token_operator(TokenType::Slash, "/"),
-            right: make_literal(Literal::Number(0.0)),
-        });
+        let binary_slash_by_zero = make_binary_expression(
+            make_literal(Literal::Number(4.0)),
+            make_literal(Literal::Number(0.0)),
+            make_token_operator(TokenType::Slash, "/"),
+        );
 
         let result = interp.evaluate(&binary_slash_by_zero);
         assert!(result.is_err());
