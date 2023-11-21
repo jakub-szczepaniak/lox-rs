@@ -27,6 +27,12 @@ impl ExprVisitor<Literal> for Interpreter {
                     todo!("Not implemented")
                 }
             },
+            TokenType::Star => match(left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x*y)),
+                _ => {
+                    todo!("not yet implemented")
+                }
+            },
             _ => {
                 todo!("not implemented")
             }
@@ -197,5 +203,18 @@ mod tests {
 
         let result = interp.evaluate(&binary_slash_by_zero);
         assert!(result.is_err());
+    }
+    #[test]
+    fn test_binary_multiplication() {
+        let interp = Interpreter {};
+        let binary_star = make_binary_expression(
+            make_literal(Literal::Number(2.0)),
+            make_literal(Literal::Number(2.0)),
+            make_token_operator(TokenType::Star, "*"),
+        );
+        let result = interp.evaluate(&binary_star);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Number(4.0)));
     }
 }
