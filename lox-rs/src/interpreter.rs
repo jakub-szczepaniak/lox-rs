@@ -29,7 +29,9 @@ impl ExprVisitor<Literal> for Interpreter {
             },
             TokenType::Plus => match(left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x+y)),
-                (Literal::String(x), Literal::String(y)) => Ok(Literal::String(format!("{}{}", x, y))),
+                (Literal::String (x), Literal::String(y)) => Ok(Literal::String(format!("{}{}", x, y))),
+                (Literal::String(x), Literal::Number(y)) => Ok(Literal::String(format!("{}{}", x, y))),
+                (Literal::Number(x), Literal::String(y)) => Ok(Literal::String(format!("{}{}", x, y))),
                 _ => Err(LoxError::interp_error(&expr.operator, "Unsupported operands"))
             }
             _ => {
@@ -79,6 +81,8 @@ impl Interpreter {
 
 #[cfg(test)]
 mod tests {
+
+    use std::result;
 
     use super::*;
 
@@ -240,6 +244,33 @@ mod tests {
 
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::String("Hello world!".to_string())));
+    }
+
+    #[test]
+    fn test_binary_concatenation_string_number() {
+        let interp = Interpreter {};
+        let binary_concat = make_binary_expression(
+            make_literal(Literal::String("123".to_string())),
+            make_literal(Literal::Number(4.0)),
+             make_token_operator(TokenType::Plus, "+"));
+        
+        let result = interp.evaluate(&binary_concat);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::String("1234".to_string())));
+    }
+    #[test]
+    fn test_binary_concatenation_number_string() {
+        let interp = Interpreter {};
+        let binary_concat = make_binary_expression(
+            make_literal(Literal::Number(4.0)),
+            make_literal(Literal::String("123".to_string())),
+            make_token_operator(TokenType::Plus, "+"));
+        
+        let result = interp.evaluate(&binary_concat);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::String("4123".to_string())));
     }
 
 }
