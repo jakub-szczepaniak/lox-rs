@@ -83,12 +83,12 @@ fn run(source: String) -> Result<(), LoxError> {
             let printer = AstPrinter {};
             println!("PrintAST:\n {}", printer.print(&expr).unwrap());
             let interpreter = Interpreter {};
-            if let Ok(result)= interpreter.evaluate(&expr) {
+            if let Ok(result) = interpreter.evaluate(&expr) {
                 println!("Interpreter:\n{}", result);
             } else {
                 //error was already printed out
             }
-            
+
             Ok(())
         }
     }

@@ -14,26 +14,58 @@ impl ExprVisitor<Literal> for Interpreter {
         match expr.operator.token_type() {
             TokenType::Minus => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x - y)),
-                _ => Err(LoxError::interp_error(&expr.operator, "Unsupported operands"))
-            }
+                _ => Err(LoxError::interp_error(
+                    &expr.operator,
+                    "Unsupported operands",
+                )),
+            },
             TokenType::Slash => match (left, right) {
                 (Literal::Number(_), Literal::Number(0.0)) => {
                     Err(LoxError::interp_error(&expr.operator, "Cannot divide by 0"))
                 }
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x / y)),
-                _ => Err(LoxError::interp_error(&expr.operator, "Unsupported operands"))
+                _ => Err(LoxError::interp_error(
+                    &expr.operator,
+                    "Unsupported operands",
+                )),
             },
-            TokenType::Star => match(left, right) {
-                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x*y)),
-                _ => Err(LoxError::interp_error(&expr.operator, "Unsuported operands"))
+            TokenType::Star => match (left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x * y)),
+                _ => Err(LoxError::interp_error(
+                    &expr.operator,
+                    "Unsuported operands",
+                )),
             },
-            TokenType::Plus => match(left, right) {
-                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x+y)),
-                (Literal::String (x), Literal::String(y)) => Ok(Literal::String(format!("{}{}", x, y))),
-                (Literal::String(x), Literal::Number(y)) => Ok(Literal::String(format!("{}{}", x, y))),
-                (Literal::Number(x), Literal::String(y)) => Ok(Literal::String(format!("{}{}", x, y))),
-                _ => Err(LoxError::interp_error(&expr.operator, "Unsupported operands"))
-            }
+            TokenType::Plus => match (left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x + y)),
+                (Literal::String(x), Literal::String(y)) => {
+                    Ok(Literal::String(format!("{}{}", x, y)))
+                }
+                (Literal::String(x), Literal::Number(y)) => {
+                    Ok(Literal::String(format!("{}{}", x, y)))
+                }
+                (Literal::Number(x), Literal::String(y)) => {
+                    Ok(Literal::String(format!("{}{}", x, y)))
+                }
+                _ => Err(LoxError::interp_error(
+                    &expr.operator,
+                    "Unsupported operands",
+                )),
+            },
+            TokenType::Greater => match (left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x > y)),
+                _ => Err(LoxError::interp_error(
+                    &expr.operator,
+                    "Unsuported operands",
+                )),
+            },
+            TokenType::GreaterEqual => match (left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x >= y)),
+                _ => Err(LoxError::interp_error(
+                    &expr.operator,
+                    "Unsuported operands",
+                )),
+            },
             _ => {
                 todo!("not implemented")
             }
@@ -81,8 +113,6 @@ impl Interpreter {
 
 #[cfg(test)]
 mod tests {
-
-    use std::result;
 
     use super::*;
 
@@ -226,7 +256,8 @@ mod tests {
         let binary_plus = make_binary_expression(
             make_literal(Literal::Number(2.0)),
             make_literal(Literal::Number(2.0)),
-            make_token_operator(TokenType::Plus, "+"));
+            make_token_operator(TokenType::Plus, "+"),
+        );
         let result = interp.evaluate(&binary_plus);
 
         assert!(result.is_ok());
@@ -238,12 +269,16 @@ mod tests {
         let binary_concat = make_binary_expression(
             make_literal(Literal::String("Hello".to_string())),
             make_literal(Literal::String(" world!".to_string())),
-            make_token_operator(TokenType::Plus, "+"));
-        
+            make_token_operator(TokenType::Plus, "+"),
+        );
+
         let result = interp.evaluate(&binary_concat);
 
         assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::String("Hello world!".to_string())));
+        assert_eq!(
+            result.ok(),
+            Some(Literal::String("Hello world!".to_string()))
+        );
     }
 
     #[test]
@@ -252,8 +287,9 @@ mod tests {
         let binary_concat = make_binary_expression(
             make_literal(Literal::String("123".to_string())),
             make_literal(Literal::Number(4.0)),
-             make_token_operator(TokenType::Plus, "+"));
-        
+            make_token_operator(TokenType::Plus, "+"),
+        );
+
         let result = interp.evaluate(&binary_concat);
 
         assert!(result.is_ok());
@@ -265,12 +301,54 @@ mod tests {
         let binary_concat = make_binary_expression(
             make_literal(Literal::Number(4.0)),
             make_literal(Literal::String("123".to_string())),
-            make_token_operator(TokenType::Plus, "+"));
-        
+            make_token_operator(TokenType::Plus, "+"),
+        );
+
         let result = interp.evaluate(&binary_concat);
 
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::String("4123".to_string())));
     }
+    #[test]
+    fn test_binary_greater_than() {
+        let interp = Interpreter {};
+        let binary_concat = make_binary_expression(
+            make_literal(Literal::Number(6.0)),
+            make_literal(Literal::Number(5.0)),
+            make_token_operator(TokenType::Greater, ">"),
+        );
 
+        let result = interp.evaluate(&binary_concat);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+    }
+    #[test]
+    fn test_binary_greater_equal_than_is_greater() {
+        let interp = Interpreter {};
+        let binary_concat = make_binary_expression(
+            make_literal(Literal::Number(6.0)),
+            make_literal(Literal::Number(5.0)),
+            make_token_operator(TokenType::GreaterEqual, ">="),
+        );
+
+        let result = interp.evaluate(&binary_concat);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+    }
+    #[test]
+    fn test_binary_greater_equal_than_is_equal() {
+        let interp = Interpreter {};
+        let binary_concat = make_binary_expression(
+            make_literal(Literal::Number(6.0)),
+            make_literal(Literal::Number(6.0)),
+            make_token_operator(TokenType::GreaterEqual, ">="),
+        );
+
+        let result = interp.evaluate(&binary_concat);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+    }
 }

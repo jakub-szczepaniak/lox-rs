@@ -26,9 +26,9 @@ impl LoxError {
     }
     pub fn interp_error(token: &Token, message: &str) -> LoxError {
         let err = LoxError {
-            token: Some(token.clone()), 
+            token: Some(token.clone()),
             message: message.to_string(),
-            line: token.line
+            line: token.line,
         };
         err.report("");
         err
