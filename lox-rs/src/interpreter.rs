@@ -14,18 +14,14 @@ impl ExprVisitor<Literal> for Interpreter {
         match expr.operator.token_type() {
             TokenType::Minus => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x - y)),
-                _ => {
-                    todo!("not yet implemented")
-                }
-            },
+                _ => Err(LoxError::interp_error(&expr.operator, "Unsupported operands"))
+            }
             TokenType::Slash => match (left, right) {
                 (Literal::Number(_), Literal::Number(0.0)) => {
-                    Err(LoxError::error(0, "Cannot divide by 0"))
+                    Err(LoxError::interp_error(&expr.operator, "Cannot divide by 0"))
                 }
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x / y)),
-                _ => {
-                    todo!("Not implemented")
-                }
+                _ => Err(LoxError::interp_error(&expr.operator, "Unsupported operands"))
             },
             TokenType::Star => match(left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x*y)),
