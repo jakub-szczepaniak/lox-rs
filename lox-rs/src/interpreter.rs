@@ -25,10 +25,13 @@ impl ExprVisitor<Literal> for Interpreter {
             },
             TokenType::Star => match(left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x*y)),
-                _ => {
-                    todo!("not yet implemented")
-                }
+                _ => Err(LoxError::interp_error(&expr.operator, "Unsuported operands"))
             },
+            TokenType::Plus => match(left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x+y)),
+                (Literal::String(x), Literal::String(y)) => Ok(Literal::String(format!("{}{}", x, y))),
+                _ => Err(LoxError::interp_error(&expr.operator, "Unsupported operands"))
+            }
             _ => {
                 todo!("not implemented")
             }
@@ -98,7 +101,7 @@ mod tests {
     }
 
     #[test]
-    fn test_the_unary_minus_for_number() {
+    fn test_unary_minus_for_number() {
         let interp = Interpreter {};
         let unary_minus = Expr::Unary(ExprUnary {
             operator: make_token_operator(TokenType::Minus, "-"),
@@ -110,7 +113,7 @@ mod tests {
     }
 
     #[test]
-    fn test_the_unary_minus_for_string() {
+    fn test_unary_minus_for_string() {
         let interp = Interpreter {};
         let unary_minus_string = Expr::Unary(ExprUnary {
             operator: make_token_operator(TokenType::Minus, "."),
@@ -213,4 +216,30 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Number(4.0)));
     }
+    #[test]
+    fn test_binary_addition_numeric() {
+        let interp = Interpreter {};
+        let binary_plus = make_binary_expression(
+            make_literal(Literal::Number(2.0)),
+            make_literal(Literal::Number(2.0)),
+            make_token_operator(TokenType::Plus, "+"));
+        let result = interp.evaluate(&binary_plus);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Number(4.0)));
+    }
+    #[test]
+    fn test_binary_concatenation_string() {
+        let interp = Interpreter {};
+        let binary_concat = make_binary_expression(
+            make_literal(Literal::String("Hello".to_string())),
+            make_literal(Literal::String(" world!".to_string())),
+            make_token_operator(TokenType::Plus, "+"));
+        
+        let result = interp.evaluate(&binary_concat);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::String("Hello world!".to_string())));
+    }
+
 }
