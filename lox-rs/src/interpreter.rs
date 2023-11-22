@@ -65,7 +65,7 @@ impl ExprVisitor<Literal> for Interpreter {
 }
 
 impl Interpreter {
-    fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxError> {
+    pub fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxError> {
         expr.accept(self)
     }
 

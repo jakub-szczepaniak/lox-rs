@@ -9,6 +9,8 @@ use error::LoxError;
 use scanner::Scanner;
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
+
+use crate::interpreter::Interpreter;
 mod expr;
 mod interpreter;
 mod literal;
@@ -80,6 +82,13 @@ fn run(source: String) -> Result<(), LoxError> {
         Some(expr) => {
             let printer = AstPrinter {};
             println!("PrintAST:\n {}", printer.print(&expr).unwrap());
+            let interpreter = Interpreter {};
+            if let Ok(result)= interpreter.evaluate(&expr) {
+                println!("Interpreter:\n{}", result);
+            } else {
+                //error was already printed out
+            }
+            
             Ok(())
         }
     }
