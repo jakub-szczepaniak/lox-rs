@@ -66,6 +66,20 @@ impl ExprVisitor<Literal> for Interpreter {
                     "Unsuported operands",
                 )),
             },
+            TokenType::Less => match (left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x < y)),
+                _ => Err(LoxError::interp_error(
+                    &expr.operator,
+                    "Unsuported operands",
+                )),
+            },
+            TokenType::LessEqual => match (left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x <= y)),
+                _ => Err(LoxError::interp_error(
+                    &expr.operator,
+                    "Unsuported operands",
+                )),
+            },
             _ => {
                 todo!("not implemented")
             }
@@ -347,6 +361,48 @@ mod tests {
         );
 
         let result = interp.evaluate(&binary_concat);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+    }
+    #[test]
+    fn test_binary_less_than() {
+        let interp = Interpreter {};
+        let binary_less = make_binary_expression(
+            make_literal(Literal::Number(5.0)),
+            make_literal(Literal::Number(6.0)),
+            make_token_operator(TokenType::Less, "<"),
+        );
+
+        let result = interp.evaluate(&binary_less);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+    }
+    #[test]
+    fn test_binary_less_than_equal_is_less() {
+        let interp = Interpreter {};
+        let binary_less = make_binary_expression(
+            make_literal(Literal::Number(5.0)),
+            make_literal(Literal::Number(6.0)),
+            make_token_operator(TokenType::LessEqual, "<="),
+        );
+
+        let result = interp.evaluate(&binary_less);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+    }
+     #[test]
+    fn test_binary_less_than_equal_is_equal() {
+        let interp = Interpreter {};
+        let binary_less = make_binary_expression(
+            make_literal(Literal::Number(6.0)),
+            make_literal(Literal::Number(6.0)),
+            make_token_operator(TokenType::LessEqual, "<="),
+        );
+
+        let result = interp.evaluate(&binary_less);
 
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
