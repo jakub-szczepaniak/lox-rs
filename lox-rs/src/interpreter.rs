@@ -3,7 +3,6 @@ use crate::expr::*;
 use crate::literal::*;
 use crate::token::Token;
 use crate::token_type::*;
-use rstest::*;
 pub struct Interpreter {}
 
 impl ExprVisitor<Literal> for Interpreter {
@@ -142,6 +141,7 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
 
+    use rstest::*;
     use super::*;
 
     fn make_literal(literal: Literal) -> Box<Expr> {
@@ -178,7 +178,7 @@ mod tests {
     fn test_unary_minus_for_string() {
         let interp = Interpreter {};
         let unary_minus_string = Expr::Unary(ExprUnary {
-            operator: make_token_operator(TokenType::Minus, "."),
+            operator: make_token_operator(TokenType::Minus, "-"),
             right: make_literal(Literal::String("some".to_string())),
         });
 
@@ -187,44 +187,19 @@ mod tests {
         assert_eq!(result.ok(), Some(Literal::Nil));
     }
 
-    #[test]
-    fn test_unary_bang_true_result_false() {
+    #[rstest]
+    #[case::bang_true (make_literal(Literal::Boolean(true)), false )]
+    #[case::bang_false (make_literal(Literal::Boolean(false)), true )]
+    #[case::bang_nil (make_literal(Literal::Nil), true )]
+    fn test_unary_bang(#[case] input: Box<Expr>, #[case] expected: bool ) {
         let interp = Interpreter {};
-        let unary_bang_true = Expr::Unary(ExprUnary {
+        let unary_bang = Expr::Unary(ExprUnary {
             operator: make_token_operator(TokenType::Bang, "!"),
-            right: make_literal(Literal::Boolean(true)),
+            right: input,
         });
-        let result = interp.evaluate(&unary_bang_true);
+        let result = interp.evaluate(&unary_bang);
         assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Boolean(false)));
-    }
-
-    #[test]
-    fn test_unary_bang_false_result_true() {
-        let interp = Interpreter {};
-        let unary_bang_false = Expr::Unary(ExprUnary {
-            operator: make_token_operator(TokenType::Bang, "!"),
-            right: make_literal(Literal::Boolean(false)),
-        });
-
-        let result = interp.evaluate(&unary_bang_false);
-
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
-    }
-
-    #[test]
-    fn test_unary_bang_nil_result_true() {
-        let interp = Interpreter {};
-        let unary_bang_nil = Expr::Unary(ExprUnary {
-            operator: make_token_operator(TokenType::Bang, "!"),
-            right: make_literal(Literal::Nil),
-        });
-
-        let result = interp.evaluate(&unary_bang_nil);
-
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+        assert_eq!(result.ok(), Some(Literal::Boolean(expected)));
     }
 
     #[test]
