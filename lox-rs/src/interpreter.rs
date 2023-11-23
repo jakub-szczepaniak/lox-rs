@@ -3,7 +3,7 @@ use crate::expr::*;
 use crate::literal::*;
 use crate::token::Token;
 use crate::token_type::*;
-
+use rstest::*;
 pub struct Interpreter {}
 
 impl ExprVisitor<Literal> for Interpreter {
@@ -80,6 +80,13 @@ impl ExprVisitor<Literal> for Interpreter {
                     "Unsuported operands",
                 )),
             },
+             TokenType::BangEqual => match (left, right) {
+                (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x != y)),
+                (Literal::String(x), Literal::String(y)) => Ok(Literal::Boolean(!x.eq(&y))),
+                (Literal::Boolean(x), Literal::Boolean(y)) => Ok(Literal::Boolean(x !=y )),
+                _ => Ok(Literal::Boolean(true)),
+            },
+            
             _ => {
                 todo!("not implemented")
             }
@@ -407,4 +414,24 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
+     #[rstest]
+     #[case::two_numbers (make_literal(Literal::Number(6.0)), make_literal(Literal::Number(4.0)))]
+     #[case::two_strings (make_literal(Literal::String("abc".to_string())), make_literal(Literal::String("bta".to_string())))]
+     #[case::two_booleans (make_literal(Literal::Boolean(true)), make_literal(Literal::Boolean(false)))]
+     #[case::mixed_types (make_literal(Literal::Number(3.0)), make_literal(Literal::Boolean(false)))]
+     #[case::mixed_types (make_literal(Literal::Nil), make_literal(Literal::Boolean(false)))]
+     #[case::mixed_types (make_literal(Literal::Nil), make_literal(Literal::Nil))]
+     #[case::mixed_types (make_literal(Literal::String("false".to_string())), make_literal(Literal::Boolean(false)))]
+    fn test_binary_bang_equal_inputs(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
+        let interp = Interpreter {};
+        let binary_bang_equal = make_binary_expression(
+            left, right, make_token_operator(TokenType::BangEqual, "!="),
+        );
+
+        let result = interp.evaluate(&binary_bang_equal);
+
+        assert!(result.is_ok());
+        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
+    }
+
 }
