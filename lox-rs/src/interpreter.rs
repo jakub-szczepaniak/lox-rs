@@ -253,65 +253,25 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Number(4.0)));
     }
-    #[test]
-    fn test_binary_addition_numeric() {
+
+    #[rstest]
+    #[case::add_numbers (make_literal(Literal::Number(2.0)), make_literal(Literal::Number(2.0)),  Some(Literal::Number(4.0)))]
+    #[case::concatenates_strings (make_literal(Literal::String("Hello".to_string())), make_literal(Literal::String(" world!".to_string())),Some(Literal::String("Hello world!".to_string())))]
+    #[case::number_and_string (make_literal(Literal::Number(3.0)), make_literal(Literal::String("123".to_string())),Some(Literal::String("3123".to_string())))]
+    #[case::string_and_number (make_literal(Literal::String("123".to_string())), make_literal(Literal::Number(4.0)),Some(Literal::String("1234".to_string())))]
+    fn test_binary_addition(#[case] left: Box<Expr>, #[case] right: Box<Expr>, #[case] expected: Option<Literal>) {
         let interp = Interpreter {};
         let binary_plus = make_binary_expression(
-            make_literal(Literal::Number(2.0)),
-            make_literal(Literal::Number(2.0)),
+            left,
+            right,
             make_token_operator(TokenType::Plus, "+"),
         );
         let result = interp.evaluate(&binary_plus);
 
         assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Number(4.0)));
+        assert_eq!(result.ok(), expected);
     }
-    #[test]
-    fn test_binary_concatenation_string() {
-        let interp = Interpreter {};
-        let binary_concat = make_binary_expression(
-            make_literal(Literal::String("Hello".to_string())),
-            make_literal(Literal::String(" world!".to_string())),
-            make_token_operator(TokenType::Plus, "+"),
-        );
-
-        let result = interp.evaluate(&binary_concat);
-
-        assert!(result.is_ok());
-        assert_eq!(
-            result.ok(),
-            Some(Literal::String("Hello world!".to_string()))
-        );
-    }
-
-    #[test]
-    fn test_binary_concatenation_string_number() {
-        let interp = Interpreter {};
-        let binary_concat = make_binary_expression(
-            make_literal(Literal::String("123".to_string())),
-            make_literal(Literal::Number(4.0)),
-            make_token_operator(TokenType::Plus, "+"),
-        );
-
-        let result = interp.evaluate(&binary_concat);
-
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::String("1234".to_string())));
-    }
-    #[test]
-    fn test_binary_concatenation_number_string() {
-        let interp = Interpreter {};
-        let binary_concat = make_binary_expression(
-            make_literal(Literal::Number(4.0)),
-            make_literal(Literal::String("123".to_string())),
-            make_token_operator(TokenType::Plus, "+"),
-        );
-
-        let result = interp.evaluate(&binary_concat);
-
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::String("4123".to_string())));
-    }
+   
     #[test]
     fn test_binary_greater_than() {
         let interp = Interpreter {};
