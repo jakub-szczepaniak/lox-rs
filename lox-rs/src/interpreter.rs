@@ -162,29 +162,19 @@ mod tests {
         })
     }
 
-    #[test]
-    fn test_unary_minus_for_number() {
+    #[rstest]
+    #[case::minus_for_number (make_literal(Literal::Number(42.0)), Some(Literal::Number(-42.0)))]
+    #[case::minus_for_string (make_literal(Literal::String("some".to_string())), Some(Literal::Nil))]
+    fn test_unary_minus_for_number(#[case] right: Box<Expr>, #[case] expected :  Option<Literal>) {
+        
         let interp = Interpreter {};
         let unary_minus = Expr::Unary(ExprUnary {
             operator: make_token_operator(TokenType::Minus, "-"),
-            right: make_literal(Literal::Number(42.0)),
+            right
         });
         let result = interp.evaluate(&unary_minus);
         assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Number(-42.0)))
-    }
-
-    #[test]
-    fn test_unary_minus_for_string() {
-        let interp = Interpreter {};
-        let unary_minus_string = Expr::Unary(ExprUnary {
-            operator: make_token_operator(TokenType::Minus, "-"),
-            right: make_literal(Literal::String("some".to_string())),
-        });
-
-        let result = interp.evaluate(&unary_minus_string);
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Nil));
+        assert_eq!(result.ok(), expected)
     }
 
     #[rstest]
