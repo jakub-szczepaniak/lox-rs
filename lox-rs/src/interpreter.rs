@@ -1,7 +1,7 @@
 use crate::error::LoxError;
 use crate::expr::*;
 use crate::literal::*;
-use crate::token::Token;
+use crate::token::*;
 use crate::token_type::*;
 pub struct Interpreter {}
 
@@ -286,54 +286,29 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
-    #[test]
-    fn test_binary_greater_equal_than_is_greater() {
+    #[rstest]
+    #[case::greater_than (make_literal(Literal::Number(6.0)), make_literal(Literal::Number(5.0)))]
+    #[case::greater_equal (make_literal(Literal::Number(6.0)), make_literal(Literal::Number(6.0)))]
+    fn test_binary_greater_equal(#[case] left : Box<Expr>, #[case] right : Box<Expr>) {
         let interp = Interpreter {};
-        let binary_concat = make_binary_expression(
-            make_literal(Literal::Number(6.0)),
-            make_literal(Literal::Number(5.0)),
+        let binary_compare = make_binary_expression(
+            left,
+            right,
             make_token_operator(TokenType::GreaterEqual, ">="),
         );
 
-        let result = interp.evaluate(&binary_concat);
+        let result = interp.evaluate(&binary_compare);
 
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
-    #[test]
-    fn test_binary_greater_equal_than_is_equal() {
-        let interp = Interpreter {};
-        let binary_concat = make_binary_expression(
-            make_literal(Literal::Number(6.0)),
-            make_literal(Literal::Number(6.0)),
-            make_token_operator(TokenType::GreaterEqual, ">="),
-        );
-
-        let result = interp.evaluate(&binary_concat);
-
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
-    }
-    #[test]
-    fn test_binary_less_than() {
+    #[rstest]
+    #[case::less_than  (make_literal(Literal::Number(5.0)), make_literal(Literal::Number(6.0)))]
+    #[case::less_equal  (make_literal(Literal::Number(5.0)), make_literal(Literal::Number(5.0)))]
+    fn test_binary_less_equal(#[case] left : Box<Expr>, #[case] right: Box<Expr>) {
         let interp = Interpreter {};
         let binary_less = make_binary_expression(
-            make_literal(Literal::Number(5.0)),
-            make_literal(Literal::Number(6.0)),
-            make_token_operator(TokenType::Less, "<"),
-        );
-
-        let result = interp.evaluate(&binary_less);
-
-        assert!(result.is_ok());
-        assert_eq!(result.ok(), Some(Literal::Boolean(true)));
-    }
-    #[test]
-    fn test_binary_less_than_equal_is_less() {
-        let interp = Interpreter {};
-        let binary_less = make_binary_expression(
-            make_literal(Literal::Number(5.0)),
-            make_literal(Literal::Number(6.0)),
+            left, right,
             make_token_operator(TokenType::LessEqual, "<="),
         );
 
@@ -343,12 +318,12 @@ mod tests {
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
      #[test]
-    fn test_binary_less_than_equal_is_equal() {
+    fn test_binary_less() {
         let interp = Interpreter {};
         let binary_less = make_binary_expression(
+            make_literal(Literal::Number(5.0)),
             make_literal(Literal::Number(6.0)),
-            make_literal(Literal::Number(6.0)),
-            make_token_operator(TokenType::LessEqual, "<="),
+            make_token_operator(TokenType::Less, "<"),
         );
 
         let result = interp.evaluate(&binary_less);
