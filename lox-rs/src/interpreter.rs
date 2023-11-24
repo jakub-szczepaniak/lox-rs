@@ -129,12 +129,19 @@ impl ExprVisitor<Literal> for Interpreter {
 }
 
 impl Interpreter {
-    pub fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxError> {
+    fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxError> {
         expr.accept(self)
     }
 
     fn is_truthy(&self, literal: &Literal) -> bool {
         !matches!(literal, Literal::Nil | Literal::Boolean(false))
+    }
+
+    pub fn interprete(&self, expr: &Expr)  {
+    match self.evaluate(expr) {
+        Ok(v) => println!("{}", v),
+        Err(e) => {}
+    }
     }
 }
 
