@@ -25,14 +25,16 @@ fn main() -> io::Result<()> {
             "Grouping : Box<Expr> expression",
             "Literal  : Option<Literal> value",
             "Unary    : Token operator, Box<Expr> right",
+            "Variable : Token name"
         ],
         &["error", "token", "literal"]
     )?;
     define_ast(output_dir, 
         "Stmt", &[
             "Expression : Expr expression",
-            "Print : Expr expression"
-        ], &["error", "expr"]
+            "Print : Expr expression",
+            "Var : Token name, Expr initializer"
+        ], &["error", "expr", "token"]
     )?;
     Ok(())
 }
