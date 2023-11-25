@@ -24,6 +24,11 @@ impl AstPrinter {
 }
 
 impl ExprVisitor<String> for AstPrinter {
+    fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<String, LoxError> {
+        todo!("Needs to be implemented!")
+    }    
+
+
     fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<String, LoxError> {
         self.parentesize(&expr.operator.lexeme, &[&expr.left, &expr.right])
     }

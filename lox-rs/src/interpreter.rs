@@ -16,10 +16,17 @@ impl StmtVisitor<()> for Interpreter {
         println!("{}",value);
         Ok(())
     }
+    fn visit_var_stmt(&self, expr: &StmtVar) -> Result<(), LoxError> {
+        Ok(())
+    }
 }
 
 
 impl ExprVisitor<Literal> for Interpreter {
+    fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<Literal, LoxError> {
+        todo!("Needs to be implemented")
+    }
+    
     fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<Literal, LoxError> {
         let left = self.evaluate(&expr.left)?;
         let right = self.evaluate(&expr.right)?;
