@@ -26,16 +26,23 @@ fn main() -> io::Result<()> {
             "Literal  : Option<Literal> value",
             "Unary    : Token operator, Box<Expr> right",
         ],
+        &["error", "token", "literal"]
+    )?;
+    define_ast(output_dir, 
+        "Stmt", &[
+            "Expression : Expr expression",
+            "Print : Expr expression"
+        ], &["error", "expr"]
     )?;
     Ok(())
 }
 
-fn define_ast(output_dir: &str, base_name: &str, types: &[&str]) -> io::Result<()> {
+fn define_ast(output_dir: &str, base_name: &str, types: &[&str], includes: &[&str]) -> io::Result<()> {
     let path = format!("{}/{}.rs", output_dir, base_name.to_lowercase());
     let file = std::fs::File::create(path).unwrap();
     let tree_types = prepare_treetypes(types, base_name);
 
-    prepare_imports(&file)?;
+    prepare_imports(&file, includes)?;
 
     prepare_enum(&file, &tree_types, base_name)?;
 
@@ -48,10 +55,11 @@ fn define_ast(output_dir: &str, base_name: &str, types: &[&str]) -> io::Result<(
     Ok(())
 }
 
-fn prepare_imports(mut file: &std::fs::File) -> Result<(), io::Error> {
-    writeln!(file, "use crate::error::*;")?;
-    writeln!(file, "use crate::token::*;")?;
-    writeln!(file, "use crate::literal::Literal;")?;
+fn prepare_imports(mut file: &std::fs::File, includes: &[&str]) -> Result<(), io::Error> {
+    
+    for incl in includes {
+        writeln!(file, "use crate::{}::*;", incl)?;
+    }
     Ok(())
 }
 
@@ -128,7 +136,7 @@ fn prepare_trait(
     tree_types: &Vec<TreeType>,
     base_name: &str,
 ) -> Result<(), io::Error> {
-    writeln!(file, "pub trait ExprVisitor<T> {{")?;
+    writeln!(file, "pub trait {base_name}Visitor<T> {{")?;
     for t in tree_types {
         writeln!(
             file,

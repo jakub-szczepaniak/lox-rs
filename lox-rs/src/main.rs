@@ -11,6 +11,7 @@ use std::io::{self, stdout, BufRead, Write};
 
 use crate::interpreter::Interpreter;
 mod expr;
+mod stmt;
 mod interpreter;
 mod literal;
 
