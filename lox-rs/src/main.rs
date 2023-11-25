@@ -11,9 +11,9 @@ use std::io::{self, stdout, BufRead, Write};
 
 use crate::interpreter::Interpreter;
 mod expr;
-mod stmt;
 mod interpreter;
 mod literal;
+mod stmt;
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -33,10 +33,9 @@ struct Lox {
 }
 
 impl Lox {
-
     pub fn new() -> Lox {
         Lox {
-            interpreter  : Interpreter {}
+            interpreter: Interpreter {},
         }
     }
     pub fn run_file(&self, path: &str) {
@@ -48,7 +47,7 @@ impl Lox {
             }
         };
 
-            match self.run( contents) {
+        match self.run(contents) {
             Ok(_) => (),
             Err(_e) => {
                 std::process::exit(65);
@@ -82,18 +81,14 @@ impl Lox {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
         let mut parser = parser::Parser::new(tokens.clone());
+        let statements = parser.parse()?;
+        
+        if self.interpreter.interprete(&statements) {
+            Ok(())
+        } else {
+             Err(LoxError::error(0, "Error when trying to interprete!"))
+        }
 
-        match parser.parse() {
-            None => Err(LoxError {
-                token: None,
-                message: "Error when parsing".to_string(),
-                line: 0,
-            }),
-            Some(expr) => {
-                self.interpreter.interprete(&expr);
-                Ok(())
-            }
         }
     }
 
-}

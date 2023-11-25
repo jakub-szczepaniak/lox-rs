@@ -3,7 +3,21 @@ use crate::expr::*;
 use crate::literal::*;
 use crate::token::*;
 use crate::token_type::*;
+use crate::stmt::*;
 pub struct Interpreter {}
+
+impl StmtVisitor<()> for Interpreter {
+    fn visit_expression_stmt(&self, expr: &StmtExpression) -> Result<(), LoxError> {
+        self.evaluate(&expr.expression)?;
+        Ok(())
+    }
+    fn visit_print_stmt(&self, expr: &StmtPrint) -> Result<(), LoxError> {
+        let value = self.evaluate(&expr.expression)?;
+        println!("{}",value);
+        Ok(())
+    }
+}
+
 
 impl ExprVisitor<Literal> for Interpreter {
     fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<Literal, LoxError> {
@@ -132,16 +146,24 @@ impl Interpreter {
     fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxError> {
         expr.accept(self)
     }
-
+    fn execute(&self, stmt: &Stmt) -> Result<(), LoxError> {
+        stmt.accept(self)
+    }
     fn is_truthy(&self, literal: &Literal) -> bool {
         !matches!(literal, Literal::Nil | Literal::Boolean(false))
     }
 
-    pub fn interprete(&self, expr: &Expr)  {
-    match self.evaluate(expr) {
-        Ok(v) => println!("{}", v),
-        Err(e) => {}
-    }
+    pub fn interprete(&self, statements: &[Stmt]) -> bool  {
+        let mut success = true;
+        for statement in statements {
+            if let Err(e) = self.execute(statement) {
+                e.report("");
+                success = false;
+                break;
+            }
+        }
+        success
+    
     }
 }
 

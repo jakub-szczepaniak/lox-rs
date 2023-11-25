@@ -2,6 +2,7 @@ use crate::error::LoxError;
 use crate::expr::*;
 use crate::token::*;
 use crate::token_type::*;
+use crate::stmt::*;
 
 pub struct Parser {
     pub tokens: Vec<Token>,
@@ -13,11 +14,33 @@ impl Parser {
         Parser { tokens, current: 0 }
     }
 
-    pub fn parse(&mut self) -> Option<Expr> {
-        match self.expression() {
-            Ok(expr) => Some(expr),
-            Err(_) => None,
+    pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
+        let mut statements = Vec::new();
+        while !self.is_at_end() {
+            statements.push(self.statement()?)
         }
+        Ok(statements)
+        
+    }
+
+    fn statement(&mut self) -> Result<Stmt, LoxError> {
+        if self.is_match(&[TokenType::Print]) {
+            return self.print_statement();
+        }
+        self.expression_statement()
+    }
+
+    fn print_statement(&mut self) -> Result<Stmt, LoxError> {
+        let value = self.expression()?;
+        self.consume(TokenType::Semicolon, "Expected ';' after the statement!")?;
+        Ok(Stmt::Print(StmtPrint { expression: value }))
+    } 
+
+    fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
+        let expr = self.expression()?;
+
+        self.consume(TokenType::Semicolon, "Expected ';' after the statement!")?;
+        Ok(Stmt::Expression(StmtExpression { expression: expr }))
     }
 
     pub fn expression(&mut self) -> Result<Expr, LoxError> {
