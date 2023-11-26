@@ -25,21 +25,29 @@ fn main() -> io::Result<()> {
             "Grouping : Box<Expr> expression",
             "Literal  : Option<Literal> value",
             "Unary    : Token operator, Box<Expr> right",
-            "Variable : Token name"
+            "Variable : Token name",
         ],
-        &["error", "token", "literal"]
+        &["error", "token", "literal"],
     )?;
-    define_ast(output_dir, 
-        "Stmt", &[
+    define_ast(
+        output_dir,
+        "Stmt",
+        &[
             "Expression : Expr expression",
             "Print : Expr expression",
-            "Var : Token name, Option<Expr> initializer"
-        ], &["error", "expr", "token"]
+            "Var : Token name, Option<Expr> initializer",
+        ],
+        &["error", "expr", "token"],
     )?;
     Ok(())
 }
 
-fn define_ast(output_dir: &str, base_name: &str, types: &[&str], includes: &[&str]) -> io::Result<()> {
+fn define_ast(
+    output_dir: &str,
+    base_name: &str,
+    types: &[&str],
+    includes: &[&str],
+) -> io::Result<()> {
     let path = format!("{}/{}.rs", output_dir, base_name.to_lowercase());
     let file = std::fs::File::create(path).unwrap();
     let tree_types = prepare_treetypes(types, base_name);
@@ -58,7 +66,6 @@ fn define_ast(output_dir: &str, base_name: &str, types: &[&str], includes: &[&st
 }
 
 fn prepare_imports(mut file: &std::fs::File, includes: &[&str]) -> Result<(), io::Error> {
-    
     for incl in includes {
         writeln!(file, "use crate::{}::*;", incl)?;
     }
