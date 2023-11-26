@@ -1,8 +1,8 @@
 use crate::error::LoxError;
 use crate::expr::*;
+use crate::stmt::*;
 use crate::token::*;
 use crate::token_type::*;
-use crate::stmt::*;
 
 pub struct Parser {
     pub tokens: Vec<Token>,
@@ -17,12 +17,38 @@ impl Parser {
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
-            statements.push(self.statement()?)
+            statements.push(self.declaration()?)
         }
         Ok(statements)
-        
     }
 
+    fn declaration(&mut self) -> Result<Stmt, LoxError> {
+        let result = if self.is_match(&[TokenType::Var]) {
+            self.var_declaration()
+        } else {
+            self.statement()
+        };
+
+        if result.is_err() {
+            self.synchronize();
+        }
+        result
+    }
+    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
+        let name = self.consume(TokenType::Identifier, "Expected variable name")?;
+        let initializer = if self.is_match(&[TokenType::Assign]) {
+            Some(self.expression()?)
+        } else {
+            None
+        };
+
+        self.consume(
+            TokenType::Semicolon,
+            "Expect ';' after variable declaration",
+        )?;
+
+        Ok(Stmt::Var(StmtVar { name, initializer }))
+    }
     fn statement(&mut self) -> Result<Stmt, LoxError> {
         if self.is_match(&[TokenType::Print]) {
             return self.print_statement();
@@ -34,7 +60,7 @@ impl Parser {
         let value = self.expression()?;
         self.consume(TokenType::Semicolon, "Expected ';' after the statement!")?;
         Ok(Stmt::Print(StmtPrint { expression: value }))
-    } 
+    }
 
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
         let expr = self.expression()?;
@@ -122,13 +148,18 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expr, LoxError> {
-        if self.is_match(&[TokenType::Identifier, TokenType::String, TokenType::Number]) {
+        if self.is_match(&[TokenType::String, TokenType::Number]) {
             let tok = self.previous();
             if let Some(value) = &tok.literal {
                 return Ok(Expr::Literal(ExprLiteral {
                     value: Some(value.clone()),
                 }));
             }
+        }
+        if self.is_match(&[TokenType::Identifier]) {
+            return Ok(Expr::Variable(ExprVariable {
+                name: self.previous().clone(),
+            }));
         }
         if self.is_match(&[TokenType::LeftParen]) {
             let expr = self.expression()?;

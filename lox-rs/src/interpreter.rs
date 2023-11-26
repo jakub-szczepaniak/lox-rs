@@ -1,9 +1,8 @@
 use crate::error::LoxError;
 use crate::expr::*;
 use crate::literal::*;
-use crate::token::*;
-use crate::token_type::*;
 use crate::stmt::*;
+use crate::token_type::*;
 pub struct Interpreter {}
 
 impl StmtVisitor<()> for Interpreter {
@@ -13,7 +12,7 @@ impl StmtVisitor<()> for Interpreter {
     }
     fn visit_print_stmt(&self, expr: &StmtPrint) -> Result<(), LoxError> {
         let value = self.evaluate(&expr.expression)?;
-        println!("{}",value);
+        println!("{}", value);
         Ok(())
     }
     fn visit_var_stmt(&self, expr: &StmtVar) -> Result<(), LoxError> {
@@ -21,12 +20,11 @@ impl StmtVisitor<()> for Interpreter {
     }
 }
 
-
 impl ExprVisitor<Literal> for Interpreter {
     fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<Literal, LoxError> {
         todo!("Needs to be implemented")
     }
-    
+
     fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<Literal, LoxError> {
         let left = self.evaluate(&expr.left)?;
         let right = self.evaluate(&expr.right)?;
@@ -103,13 +101,13 @@ impl ExprVisitor<Literal> for Interpreter {
             TokenType::BangEqual => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x != y)),
                 (Literal::String(x), Literal::String(y)) => Ok(Literal::Boolean(!x.eq(&y))),
-                (Literal::Boolean(x), Literal::Boolean(y)) => Ok(Literal::Boolean(x !=y )),
+                (Literal::Boolean(x), Literal::Boolean(y)) => Ok(Literal::Boolean(x != y)),
                 _ => Ok(Literal::Boolean(true)),
             },
             TokenType::Equals => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x == y)),
                 (Literal::String(x), Literal::String(y)) => Ok(Literal::Boolean(x.eq(&y))),
-                (Literal::Boolean(x), Literal::Boolean(y)) => Ok(Literal::Boolean(x ==y )),
+                (Literal::Boolean(x), Literal::Boolean(y)) => Ok(Literal::Boolean(x == y)),
                 (Literal::Nil, Literal::Nil) => Ok(Literal::Boolean(true)),
                 _ => Ok(Literal::Boolean(false)),
             },
@@ -160,7 +158,7 @@ impl Interpreter {
         !matches!(literal, Literal::Nil | Literal::Boolean(false))
     }
 
-    pub fn interprete(&self, statements: &[Stmt]) -> bool  {
+    pub fn interprete(&self, statements: &[Stmt]) -> bool {
         let mut success = true;
         for statement in statements {
             if let Err(e) = self.execute(statement) {
@@ -170,15 +168,14 @@ impl Interpreter {
             }
         }
         success
-    
     }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use rstest::*;
     use super::*;
+    use rstest::*;
 
     fn make_literal(literal: Literal) -> Box<Expr> {
         Box::new(Expr::Literal(ExprLiteral {
@@ -201,12 +198,11 @@ mod tests {
     #[rstest]
     #[case::minus_for_number (make_literal(Literal::Number(42.0)), Some(Literal::Number(-42.0)))]
     #[case::minus_for_string (make_literal(Literal::String("some".to_string())), Some(Literal::Nil))]
-    fn test_unary_minus_for_number(#[case] right: Box<Expr>, #[case] expected :  Option<Literal>) {
-        
+    fn test_unary_minus_for_number(#[case] right: Box<Expr>, #[case] expected: Option<Literal>) {
         let interp = Interpreter {};
         let unary_minus = Expr::Unary(ExprUnary {
             operator: make_token_operator(TokenType::Minus, "-"),
-            right
+            right,
         });
         let result = interp.evaluate(&unary_minus);
         assert!(result.is_ok());
@@ -214,10 +210,10 @@ mod tests {
     }
 
     #[rstest]
-    #[case::bang_true (make_literal(Literal::Boolean(true)), false )]
-    #[case::bang_false (make_literal(Literal::Boolean(false)), true )]
-    #[case::bang_nil (make_literal(Literal::Nil), true )]
-    fn test_unary_bang(#[case] input: Box<Expr>, #[case] expected: bool ) {
+    #[case::bang_true(make_literal(Literal::Boolean(true)), false)]
+    #[case::bang_false(make_literal(Literal::Boolean(false)), true)]
+    #[case::bang_nil(make_literal(Literal::Nil), true)]
+    fn test_unary_bang(#[case] input: Box<Expr>, #[case] expected: bool) {
         let interp = Interpreter {};
         let unary_bang = Expr::Unary(ExprUnary {
             operator: make_token_operator(TokenType::Bang, "!"),
@@ -281,23 +277,28 @@ mod tests {
     }
 
     #[rstest]
-    #[case::add_numbers (make_literal(Literal::Number(2.0)), make_literal(Literal::Number(2.0)),  Some(Literal::Number(4.0)))]
+    #[case::add_numbers(
+        make_literal(Literal::Number(2.0)),
+        make_literal(Literal::Number(2.0)),
+        Some(Literal::Number(4.0))
+    )]
     #[case::concatenates_strings (make_literal(Literal::String("Hello".to_string())), make_literal(Literal::String(" world!".to_string())),Some(Literal::String("Hello world!".to_string())))]
     #[case::number_and_string (make_literal(Literal::Number(3.0)), make_literal(Literal::String("123".to_string())),Some(Literal::String("3123".to_string())))]
     #[case::string_and_number (make_literal(Literal::String("123".to_string())), make_literal(Literal::Number(4.0)),Some(Literal::String("1234".to_string())))]
-    fn test_binary_addition(#[case] left: Box<Expr>, #[case] right: Box<Expr>, #[case] expected: Option<Literal>) {
+    fn test_binary_addition(
+        #[case] left: Box<Expr>,
+        #[case] right: Box<Expr>,
+        #[case] expected: Option<Literal>,
+    ) {
         let interp = Interpreter {};
-        let binary_plus = make_binary_expression(
-            left,
-            right,
-            make_token_operator(TokenType::Plus, "+"),
-        );
+        let binary_plus =
+            make_binary_expression(left, right, make_token_operator(TokenType::Plus, "+"));
         let result = interp.evaluate(&binary_plus);
 
         assert!(result.is_ok());
         assert_eq!(result.ok(), expected);
     }
-   
+
     #[test]
     fn test_binary_greater_than() {
         let interp = Interpreter {};
@@ -313,9 +314,9 @@ mod tests {
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
     #[rstest]
-    #[case::greater_than (make_literal(Literal::Number(6.0)), make_literal(Literal::Number(5.0)))]
-    #[case::greater_equal (make_literal(Literal::Number(6.0)), make_literal(Literal::Number(6.0)))]
-    fn test_binary_greater_equal(#[case] left : Box<Expr>, #[case] right : Box<Expr>) {
+    #[case::greater_than(make_literal(Literal::Number(6.0)), make_literal(Literal::Number(5.0)))]
+    #[case::greater_equal(make_literal(Literal::Number(6.0)), make_literal(Literal::Number(6.0)))]
+    fn test_binary_greater_equal(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
         let interp = Interpreter {};
         let binary_compare = make_binary_expression(
             left,
@@ -329,21 +330,19 @@ mod tests {
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
     #[rstest]
-    #[case::less_than  (make_literal(Literal::Number(5.0)), make_literal(Literal::Number(6.0)))]
-    #[case::less_equal  (make_literal(Literal::Number(5.0)), make_literal(Literal::Number(5.0)))]
-    fn test_binary_less_equal(#[case] left : Box<Expr>, #[case] right: Box<Expr>) {
+    #[case::less_than(make_literal(Literal::Number(5.0)), make_literal(Literal::Number(6.0)))]
+    #[case::less_equal(make_literal(Literal::Number(5.0)), make_literal(Literal::Number(5.0)))]
+    fn test_binary_less_equal(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
         let interp = Interpreter {};
-        let binary_less = make_binary_expression(
-            left, right,
-            make_token_operator(TokenType::LessEqual, "<="),
-        );
+        let binary_less =
+            make_binary_expression(left, right, make_token_operator(TokenType::LessEqual, "<="));
 
         let result = interp.evaluate(&binary_less);
 
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
-     #[test]
+    #[test]
     fn test_binary_less() {
         let interp = Interpreter {};
         let binary_less = make_binary_expression(
@@ -357,19 +356,24 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
-     #[rstest]
-     #[case::two_numbers (make_literal(Literal::Number(6.0)), make_literal(Literal::Number(4.0)))]
-     #[case::two_strings (make_literal(Literal::String("abc".to_string())), make_literal(Literal::String("bta".to_string())))]
-     #[case::two_booleans (make_literal(Literal::Boolean(true)), make_literal(Literal::Boolean(false)))]
-     #[case::mixed_types (make_literal(Literal::Number(3.0)), make_literal(Literal::Boolean(false)))]
-     #[case::mixed_types (make_literal(Literal::Nil), make_literal(Literal::Boolean(false)))]
-     #[case::mixed_types (make_literal(Literal::Nil), make_literal(Literal::Number(2.3)))]
-     #[case::mixed_types (make_literal(Literal::String("false".to_string())), make_literal(Literal::Boolean(false)))]
+    #[rstest]
+    #[case::two_numbers(make_literal(Literal::Number(6.0)), make_literal(Literal::Number(4.0)))]
+    #[case::two_strings (make_literal(Literal::String("abc".to_string())), make_literal(Literal::String("bta".to_string())))]
+    #[case::two_booleans(
+        make_literal(Literal::Boolean(true)),
+        make_literal(Literal::Boolean(false))
+    )]
+    #[case::mixed_types(
+        make_literal(Literal::Number(3.0)),
+        make_literal(Literal::Boolean(false))
+    )]
+    #[case::mixed_types(make_literal(Literal::Nil), make_literal(Literal::Boolean(false)))]
+    #[case::mixed_types(make_literal(Literal::Nil), make_literal(Literal::Number(2.3)))]
+    #[case::mixed_types (make_literal(Literal::String("false".to_string())), make_literal(Literal::Boolean(false)))]
     fn test_binary_bang_equal_inputs(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
         let interp = Interpreter {};
-        let binary_bang_equal = make_binary_expression(
-            left, right, make_token_operator(TokenType::BangEqual, "!="),
-        );
+        let binary_bang_equal =
+            make_binary_expression(left, right, make_token_operator(TokenType::BangEqual, "!="));
 
         let result = interp.evaluate(&binary_bang_equal);
 
@@ -377,22 +381,21 @@ mod tests {
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
     }
     #[rstest]
-    #[case::two_numbers (make_literal(Literal::Number(6.0)), make_literal(Literal::Number(6.0)))]
+    #[case::two_numbers(make_literal(Literal::Number(6.0)), make_literal(Literal::Number(6.0)))]
     #[case::two_strings (make_literal(Literal::String("abc".to_string())), make_literal(Literal::String("abc".to_string())))]
-    #[case::two_booleans (make_literal(Literal::Boolean(true)), make_literal(Literal::Boolean(true)))]
-    #[case::two_nulls (make_literal(Literal::Nil), make_literal(Literal::Nil))]
+    #[case::two_booleans(
+        make_literal(Literal::Boolean(true)),
+        make_literal(Literal::Boolean(true))
+    )]
+    #[case::two_nulls(make_literal(Literal::Nil), make_literal(Literal::Nil))]
     fn test_binary_equal_equal(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
         let interp = Interpreter {};
-        let binary_equal = make_binary_expression(
-            left, right, make_token_operator(TokenType::Equals, "=="),
-        );
+        let binary_equal =
+            make_binary_expression(left, right, make_token_operator(TokenType::Equals, "=="));
 
         let result = interp.evaluate(&binary_equal);
 
         assert!(result.is_ok());
         assert_eq!(result.ok(), Some(Literal::Boolean(true)));
- 
-    }     
-    
-
+    }
 }

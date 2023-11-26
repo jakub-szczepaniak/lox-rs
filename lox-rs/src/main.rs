@@ -1,4 +1,4 @@
-mod ast_print;
+// mod ast_print;
 mod error;
 mod parser;
 mod scanner;
@@ -82,13 +82,11 @@ impl Lox {
         let tokens = scanner.scan_tokens()?;
         let mut parser = parser::Parser::new(tokens.clone());
         let statements = parser.parse()?;
-        
+
         if self.interpreter.interprete(&statements) {
             Ok(())
         } else {
-             Err(LoxError::error(0, "Error when trying to interprete!"))
-        }
-
+            Err(LoxError::error(0, "Error when trying to interprete!"))
         }
     }
-
+}

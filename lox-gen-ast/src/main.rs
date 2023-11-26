@@ -33,7 +33,7 @@ fn main() -> io::Result<()> {
         "Stmt", &[
             "Expression : Expr expression",
             "Print : Expr expression",
-            "Var : Token name, Expr initializer"
+            "Var : Token name, Option<Expr> initializer"
         ], &["error", "expr", "token"]
     )?;
     Ok(())
