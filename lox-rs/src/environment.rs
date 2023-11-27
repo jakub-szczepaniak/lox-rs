@@ -28,7 +28,7 @@ impl Environment {
         }
         Err(LoxError {
             token: Some(token.clone()),
-            message: "Undefined variable".to_string(),
+            message: format!("Undefined variable: {}", token.as_string()),
             line: token.line,
         })
     }
