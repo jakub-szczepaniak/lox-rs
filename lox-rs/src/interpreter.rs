@@ -1,3 +1,4 @@
+use crate::environment::*;
 use crate::error::LoxError;
 use crate::expr::*;
 use crate::literal::*;
@@ -196,11 +197,32 @@ mod tests {
         })
     }
 
+    fn make_var_identifier(lexeme: &str) -> Token {
+        make_token_operator(TokenType::Identifier, lexeme)
+    }
+
+    #[test]
+    fn test_variable_declaration_statement() {
+        let interp = Interpreter::new();
+
+        let var = make_var_identifier("my_var");
+        let expr = make_literal(Literal::Number(42.0));
+
+        let var_statement = Stmt::Var(StmtVar {
+            name: var.clone(),
+            initializer: Some(*expr),
+        });
+
+        let result = interp.execute(&var_statement);
+
+        assert!(result.is_ok());
+        assert_eq!(interp.environment.get(&var).unwrap(), Literal::Number(43.0));
+    }
     #[rstest]
     #[case::minus_for_number (make_literal(Literal::Number(42.0)), Some(Literal::Number(-42.0)))]
     #[case::minus_for_string (make_literal(Literal::String("some".to_string())), Some(Literal::Nil))]
     fn test_unary_minus_for_number(#[case] right: Box<Expr>, #[case] expected: Option<Literal>) {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let unary_minus = Expr::Unary(ExprUnary {
             operator: make_token_operator(TokenType::Minus, "-"),
             right,
@@ -215,7 +237,7 @@ mod tests {
     #[case::bang_false(make_literal(Literal::Boolean(false)), true)]
     #[case::bang_nil(make_literal(Literal::Nil), true)]
     fn test_unary_bang(#[case] input: Box<Expr>, #[case] expected: bool) {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let unary_bang = Expr::Unary(ExprUnary {
             operator: make_token_operator(TokenType::Bang, "!"),
             right: input,
@@ -227,7 +249,7 @@ mod tests {
 
     #[test]
     fn test_binary_substraction() {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_minus = make_binary_expression(
             make_literal(Literal::Number(13.0)),
             make_literal(Literal::Number(14.0)),
@@ -240,7 +262,7 @@ mod tests {
 
     #[test]
     fn test_binary_division() {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_slash = make_binary_expression(
             make_literal(Literal::Number(10.0)),
             make_literal(Literal::Number(2.0)),
@@ -253,7 +275,7 @@ mod tests {
     }
     #[test]
     fn test_binary_division_by_zero() {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_slash_by_zero = make_binary_expression(
             make_literal(Literal::Number(4.0)),
             make_literal(Literal::Number(0.0)),
@@ -265,7 +287,7 @@ mod tests {
     }
     #[test]
     fn test_binary_multiplication() {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_star = make_binary_expression(
             make_literal(Literal::Number(2.0)),
             make_literal(Literal::Number(2.0)),
@@ -291,7 +313,7 @@ mod tests {
         #[case] right: Box<Expr>,
         #[case] expected: Option<Literal>,
     ) {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_plus =
             make_binary_expression(left, right, make_token_operator(TokenType::Plus, "+"));
         let result = interp.evaluate(&binary_plus);
@@ -302,7 +324,7 @@ mod tests {
 
     #[test]
     fn test_binary_greater_than() {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_concat = make_binary_expression(
             make_literal(Literal::Number(6.0)),
             make_literal(Literal::Number(5.0)),
@@ -318,7 +340,7 @@ mod tests {
     #[case::greater_than(make_literal(Literal::Number(6.0)), make_literal(Literal::Number(5.0)))]
     #[case::greater_equal(make_literal(Literal::Number(6.0)), make_literal(Literal::Number(6.0)))]
     fn test_binary_greater_equal(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_compare = make_binary_expression(
             left,
             right,
@@ -334,7 +356,7 @@ mod tests {
     #[case::less_than(make_literal(Literal::Number(5.0)), make_literal(Literal::Number(6.0)))]
     #[case::less_equal(make_literal(Literal::Number(5.0)), make_literal(Literal::Number(5.0)))]
     fn test_binary_less_equal(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_less =
             make_binary_expression(left, right, make_token_operator(TokenType::LessEqual, "<="));
 
@@ -345,7 +367,7 @@ mod tests {
     }
     #[test]
     fn test_binary_less() {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_less = make_binary_expression(
             make_literal(Literal::Number(5.0)),
             make_literal(Literal::Number(6.0)),
@@ -372,7 +394,7 @@ mod tests {
     #[case::mixed_types(make_literal(Literal::Nil), make_literal(Literal::Number(2.3)))]
     #[case::mixed_types (make_literal(Literal::String("false".to_string())), make_literal(Literal::Boolean(false)))]
     fn test_binary_bang_equal_inputs(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_bang_equal =
             make_binary_expression(left, right, make_token_operator(TokenType::BangEqual, "!="));
 
@@ -390,7 +412,7 @@ mod tests {
     )]
     #[case::two_nulls(make_literal(Literal::Nil), make_literal(Literal::Nil))]
     fn test_binary_equal_equal(#[case] left: Box<Expr>, #[case] right: Box<Expr>) {
-        let interp = Interpreter {};
+        let interp = Interpreter::new();
         let binary_equal =
             make_binary_expression(left, right, make_token_operator(TokenType::Equals, "=="));
 
