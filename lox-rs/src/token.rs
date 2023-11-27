@@ -37,6 +37,10 @@ impl Token {
             literal: None,
         }
     }
+
+    pub fn as_string(&self) -> &String {
+        &self.lexeme
+    }
 }
 
 impl fmt::Display for Token {

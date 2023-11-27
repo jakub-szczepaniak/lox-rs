@@ -10,6 +10,7 @@ use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
 use crate::interpreter::Interpreter;
+mod environment;
 mod expr;
 mod interpreter;
 mod literal;
@@ -80,7 +81,7 @@ impl Lox {
     fn run(&self, source: String) -> Result<(), LoxError> {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
-        let mut parser = parser::Parser::new(tokens.clone());
+        let mut parser = parser::Parser::new(tokens);
         let statements = parser.parse()?;
 
         if self.interpreter.interprete(&statements) {

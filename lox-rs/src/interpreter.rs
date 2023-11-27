@@ -118,7 +118,7 @@ impl ExprVisitor<Literal> for Interpreter {
         }
     }
     fn visit_grouping_expr(&self, expr: &ExprGrouping) -> Result<Literal, LoxError> {
-        Ok(self.evaluate(&expr.expression).unwrap())
+        self.evaluate(&expr.expression)
     }
 
     fn visit_literal_expr(&self, expr: &ExprLiteral) -> Result<Literal, LoxError> {
@@ -175,6 +175,7 @@ impl Interpreter {
 mod tests {
 
     use super::*;
+    use crate::token::Token;
     use rstest::*;
 
     fn make_literal(literal: Literal) -> Box<Expr> {
