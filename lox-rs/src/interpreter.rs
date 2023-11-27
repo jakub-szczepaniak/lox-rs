@@ -4,7 +4,9 @@ use crate::expr::*;
 use crate::literal::*;
 use crate::stmt::*;
 use crate::token_type::*;
-pub struct Interpreter {}
+pub struct Interpreter {
+    environment: Environment,
+}
 
 impl StmtVisitor<()> for Interpreter {
     fn visit_expression_stmt(&self, expr: &StmtExpression) -> Result<(), LoxError> {
@@ -149,6 +151,12 @@ impl ExprVisitor<Literal> for Interpreter {
 }
 
 impl Interpreter {
+    pub fn new() -> Interpreter {
+        Interpreter {
+            environment: Environment::new(),
+        }
+    }
+
     fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxError> {
         expr.accept(self)
     }
