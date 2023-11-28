@@ -7,13 +7,20 @@ use crate::token_type::*;
 pub struct Parser<'a> {
     pub tokens: &'a [Token],
     current: usize,
+    had_error: bool,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(tokens: &[Token]) -> Parser {
-        Parser { tokens, current: 0 }
+        Parser {
+            tokens,
+            current: 0,
+            had_error: false,
+        }
     }
-
+    pub fn success(&self) -> bool {
+        !self.had_error
+    }
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
@@ -70,6 +77,10 @@ impl<'a> Parser<'a> {
     }
 
     pub fn expression(&mut self) -> Result<Expr, LoxError> {
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<Expr, LoxError> {
         self.equality()
     }
 
@@ -169,21 +180,22 @@ impl<'a> Parser<'a> {
                 expression: Box::new(expr),
             }));
         }
-        Err(LoxError::parse_error(
-            self.peek(),
-            "failed parsing primary tokens",
-        ))
+
+        let token = self.peek().clone();
+        Err(self.error(&token, "Failed when parsing primary tokens"))
     }
 
     fn consume(&mut self, ttype: TokenType, message: &str) -> Result<Token, LoxError> {
         if self.check(ttype) {
             Ok(self.advance().clone())
         } else {
-            Err(Parser::error(self.peek(), message))
+            let token = self.peek().clone();
+            Err(self.error(&token, message))
         }
     }
 
-    fn error(token: &Token, message: &str) -> LoxError {
+    fn error(&mut self, token: &Token, message: &str) -> LoxError {
+        self.had_error = true;
         LoxError::parse_error(token, message)
     }
 
