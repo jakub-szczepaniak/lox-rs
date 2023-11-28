@@ -21,6 +21,7 @@ fn main() -> io::Result<()> {
         output_dir,
         "Expr",
         &[
+            "Assign   : Token name, Box<Expr> value",
             "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
             "Grouping : Box<Expr> expression",
             "Literal  : Option<Literal> value",

@@ -33,6 +33,10 @@ impl StmtVisitor<()> for Interpreter {
 }
 
 impl ExprVisitor<Literal> for Interpreter {
+    fn visit_assign_expr(&self, expr: &ExprAssign) -> Result<Literal, LoxError> {
+        todo!("Needs to be implmented!")
+    }
+
     fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<Literal, LoxError> {
         self.environment.borrow().get(&expr.name)
     }
