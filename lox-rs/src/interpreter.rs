@@ -239,6 +239,15 @@ mod tests {
     }
 
     #[test]
+    fn test_variable_expression_undefined() {
+        let interp = Interpreter::new();
+
+        let var_name = make_var_identifier("my_var");
+        let var_expression = ExprVariable { name: var_name };
+        assert!(interp.visit_variable_expr(&var_expression).is_err());
+    }
+
+    #[test]
     fn test_variable_declaration_statement_nil() {
         let interp = Interpreter::new();
         let var = make_var_identifier("my_var");
