@@ -4,8 +4,9 @@ use crate::expr::*;
 use crate::literal::*;
 use crate::stmt::*;
 use crate::token_type::*;
+use std::cell::RefCell;
 pub struct Interpreter {
-    environment: Environment,
+    environment: RefCell<Environment>,
 }
 
 impl StmtVisitor<()> for Interpreter {
@@ -19,13 +20,21 @@ impl StmtVisitor<()> for Interpreter {
         Ok(())
     }
     fn visit_var_stmt(&self, expr: &StmtVar) -> Result<(), LoxError> {
+        let value = if let Some(initializer) = &expr.initializer {
+            self.evaluate(initializer)?
+        } else {
+            Literal::Nil
+        };
+        self.environment
+            .borrow_mut()
+            .define(expr.name.as_string(), value);
         Ok(())
     }
 }
 
 impl ExprVisitor<Literal> for Interpreter {
     fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<Literal, LoxError> {
-        todo!("Needs to be implemented")
+        self.environment.borrow().get(&expr.name)
     }
 
     fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<Literal, LoxError> {
@@ -153,7 +162,7 @@ impl ExprVisitor<Literal> for Interpreter {
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
-            environment: Environment::new(),
+            environment: RefCell::new(Environment::new()),
         }
     }
 
@@ -210,6 +219,41 @@ mod tests {
     }
 
     #[test]
+    fn test_variable_expression_defined() {
+        let interp = Interpreter::new();
+
+        let var_name = make_var_identifier("my_var");
+        let var_statement = Stmt::Var(StmtVar {
+            name: var_name.clone(),
+            initializer: Some(*make_literal(Literal::Number(42.0))),
+        });
+        assert!(interp.execute(&var_statement).is_ok());
+
+        let var_expression = ExprVariable {
+            name: make_var_identifier("my_var"),
+        };
+        assert_eq!(
+            interp.visit_variable_expr(&var_expression).unwrap(),
+            Literal::Number(42.0)
+        );
+    }
+
+    #[test]
+    fn test_variable_declaration_statement_nil() {
+        let interp = Interpreter::new();
+        let var = make_var_identifier("my_var");
+
+        let var_statement = Stmt::Var(StmtVar {
+            name: var.clone(),
+            initializer: None,
+        });
+
+        let result = interp.execute(&var_statement);
+        assert!(result.is_ok());
+        assert_eq!(interp.environment.borrow().get(&var).unwrap(), Literal::Nil);
+    }
+
+    #[test]
     fn test_variable_declaration_statement() {
         let interp = Interpreter::new();
 
@@ -224,7 +268,10 @@ mod tests {
         let result = interp.execute(&var_statement);
 
         assert!(result.is_ok());
-        assert_eq!(interp.environment.get(&var).unwrap(), Literal::Number(43.0));
+        assert_eq!(
+            interp.environment.borrow().get(&var).unwrap(),
+            Literal::Number(42.0)
+        );
     }
     #[rstest]
     #[case::minus_for_number (make_literal(Literal::Number(42.0)), Some(Literal::Number(-42.0)))]

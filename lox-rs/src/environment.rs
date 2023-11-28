@@ -18,8 +18,8 @@ impl Environment {
         }
     }
 
-    pub fn define(&mut self, var_name: String, value: Literal) {
-        self.values.insert(var_name, value);
+    pub fn define(&mut self, var_name: &str, value: Literal) {
+        self.values.insert(var_name.to_string(), value);
     }
 
     pub fn get(&self, token: &Token) -> Result<Literal, LoxError> {
@@ -40,8 +40,8 @@ mod tests {
     use crate::token::Token;
     use crate::token_type::TokenType;
 
-    fn make_key_value(key: &str, value: Literal) -> (String, Literal) {
-        (key.to_string(), value)
+    fn make_key_value(key: &str, value: Literal) -> (&str, Literal) {
+        (key, value)
     }
 
     #[test]
