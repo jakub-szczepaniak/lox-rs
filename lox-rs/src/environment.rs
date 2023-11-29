@@ -1,3 +1,4 @@
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
 use crate::{error::LoxError, literal::Literal, token::Token};
@@ -32,6 +33,18 @@ impl Environment {
             line: token.line,
         })
     }
+
+    pub fn assign(&mut self, name: &Token, value: Literal) -> Result<(), LoxError> {
+        if let Entry::Occupied(mut entry) = self.values.entry(name.as_string().to_string()) {
+            entry.insert(value);
+            Ok(())
+        } else {
+            Err(LoxError::interp_error(
+                name,
+                "Undefined variable: {name.as_string()}",
+            ))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -39,9 +52,24 @@ mod tests {
     use super::*;
     use crate::token::Token;
     use crate::token_type::TokenType;
-
     fn make_key_value(key: &str, value: Literal) -> (&str, Literal) {
         (key, value)
+    }
+
+    #[test]
+    fn test_can_reassign_existing_variable() {
+        let mut env = Environment::new();
+        let var_name = Token::new(TokenType::Identifier, "my_var".to_string(), 0, None);
+
+        env.define("my_var", Literal::Number(42.0));
+        assert!(env.assign(&var_name, Literal::Number(24.0)).is_ok());
+        assert_eq!(env.get(&var_name).unwrap(), Literal::Number(24.0));
+    }
+    #[test]
+    fn test_returns_error_for_unknown_variable() {
+        let mut env = Environment::new();
+        let var_name = Token::new(TokenType::Identifier, "no_var".to_string(), 0, None);
+        assert!(env.assign(&var_name, Literal::Boolean(false)).is_err());
     }
 
     #[test]
