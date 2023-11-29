@@ -81,7 +81,21 @@ impl<'a> Parser<'a> {
     }
 
     fn assignment(&mut self) -> Result<Expr, LoxError> {
-        self.equality()
+        let expr = self.equality()?;
+
+        if self.is_match(&[TokenType::Assign]) {
+            let equals = self.previous().clone();
+            let value = self.assignment()?;
+
+            if let Expr::Variable(expr) = expr {
+                return Ok(Expr::Assign(ExprAssign {
+                    name: expr.name.clone(),
+                    value: Box::new(value),
+                }));
+            }
+            self.error(&equals, "Invalid l-value for assignment");
+        }
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<Expr, LoxError> {
