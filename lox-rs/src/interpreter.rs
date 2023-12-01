@@ -34,7 +34,11 @@ impl StmtVisitor<()> for Interpreter {
 
 impl ExprVisitor<Literal> for Interpreter {
     fn visit_assign_expr(&self, expr: &ExprAssign) -> Result<Literal, LoxError> {
-        todo!("Needs to be implmented!")
+        let value = self.evaluate(&expr.value)?;
+        self.environment
+            .borrow_mut()
+            .assign(&expr.name, value.clone())?;
+        Ok(value)
     }
 
     fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<Literal, LoxError> {

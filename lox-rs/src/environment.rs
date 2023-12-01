@@ -27,11 +27,10 @@ impl Environment {
         if let Some(value) = self.values.get(token.as_string()) {
             return Ok(value.clone());
         }
-        Err(LoxError {
-            token: Some(token.clone()),
-            message: format!("Undefined variable: {}", token.as_string()),
-            line: token.line,
-        })
+        Err(LoxError::interp_error(
+            &token.clone(),
+            &format!("Undefined variable: {}", token.as_string()),
+        ))
     }
 
     pub fn assign(&mut self, name: &Token, value: Literal) -> Result<(), LoxError> {
@@ -41,7 +40,7 @@ impl Environment {
         } else {
             Err(LoxError::interp_error(
                 name,
-                "Undefined variable: {name.as_string()}",
+                &format!("Undefined variable: {}", name.as_string()),
             ))
         }
     }
