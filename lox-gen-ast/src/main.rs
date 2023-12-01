@@ -34,6 +34,7 @@ fn main() -> io::Result<()> {
         output_dir,
         "Stmt",
         &[
+            "Block  : Vec<Stmt> statements",
             "Expression : Expr expression",
             "Print : Expr expression",
             "Var : Token name, Option<Expr> initializer",

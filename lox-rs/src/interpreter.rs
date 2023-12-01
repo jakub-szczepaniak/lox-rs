@@ -10,6 +10,10 @@ pub struct Interpreter {
 }
 
 impl StmtVisitor<()> for Interpreter {
+    fn visit_block_stmt(&self, expr: &StmtBlock) -> Result<(), LoxError> {
+        todo!("Need to be implemented");
+    }
+
     fn visit_expression_stmt(&self, expr: &StmtExpression) -> Result<(), LoxError> {
         self.evaluate(&expr.expression)?;
         Ok(())

@@ -60,7 +60,22 @@ impl<'a> Parser<'a> {
         if self.is_match(&[TokenType::Print]) {
             return self.print_statement();
         }
+        if self.is_match(&[TokenType::LeftBrace]) {
+            return Ok(Stmt::Block(StmtBlock {
+                statements: self.block()?,
+            }));
+        }
         self.expression_statement()
+    }
+
+    fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
+        let mut statements = Vec::new();
+        while !self.check(TokenType::RightBrace) && !self.is_at_end() {
+            statements.push(self.declaration()?);
+        }
+
+        self.consume(TokenType::RightBrace, "Expected '}' after block");
+        Ok(statements)
     }
 
     fn print_statement(&mut self) -> Result<Stmt, LoxError> {
