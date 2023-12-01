@@ -1,9 +1,13 @@
+use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use crate::{error::LoxError, literal::Literal, token::Token};
+#[derive(Clone)]
 pub struct Environment {
     values: HashMap<String, Literal>,
+    outer: Option<Rc<RefCell<Environment>>>,
 }
 
 impl Default for Environment {
@@ -16,6 +20,14 @@ impl Environment {
     pub fn new() -> Environment {
         Environment {
             values: HashMap::new(),
+            outer: None,
+        }
+    }
+
+    pub fn nested_in(outer: Rc<RefCell<Environment>>) -> Environment {
+        Environment {
+            values: HashMap::new(),
+            outer: Some(outer),
         }
     }
 
@@ -25,18 +37,23 @@ impl Environment {
 
     pub fn get(&self, token: &Token) -> Result<Literal, LoxError> {
         if let Some(value) = self.values.get(token.as_string()) {
-            return Ok(value.clone());
+            Ok(value.clone())
+        } else if let Some(outer) = &self.outer {
+            return outer.borrow().get(token);
+        } else {
+            Err(LoxError::interp_error(
+                &token.clone(),
+                &format!("Undefined variable: {}", token.as_string()),
+            ))
         }
-        Err(LoxError::interp_error(
-            &token.clone(),
-            &format!("Undefined variable: {}", token.as_string()),
-        ))
     }
 
     pub fn assign(&mut self, name: &Token, value: Literal) -> Result<(), LoxError> {
         if let Entry::Occupied(mut entry) = self.values.entry(name.as_string().to_string()) {
             entry.insert(value);
             Ok(())
+        } else if let Some(outer) = &self.outer {
+            outer.borrow_mut().assign(name, value)
         } else {
             Err(LoxError::interp_error(
                 name,
@@ -55,6 +72,47 @@ mod tests {
         (key, value)
     }
 
+    #[test]
+    fn test_assingnment_to_inner_overwrites_outer() {
+        let outer = Rc::new(RefCell::new(Environment::new()));
+        outer.borrow_mut().define("my_var", Literal::Boolean(true));
+
+        let mut inner = Environment::nested_in(Rc::clone(&outer));
+
+        let var_name = Token::new(TokenType::Identifier, "my_var".to_string(), 0, None);
+
+        assert!(inner.assign(&var_name, Literal::Boolean(false)).is_ok());
+
+        assert_eq!(inner.get(&var_name).unwrap(), Literal::Boolean(false));
+        assert_eq!(
+            outer.borrow().get(&var_name).unwrap(),
+            Literal::Boolean(false)
+        );
+    }
+
+    #[test]
+    fn test_reading_from_nested_environment() {
+        let outer = Rc::new(RefCell::new(Environment::new()));
+        outer.borrow_mut().define("my_var", Literal::Boolean(true));
+
+        let inner = Environment::nested_in(Rc::clone(&outer));
+
+        let var_name = Token::new(TokenType::Identifier, "my_var".to_string(), 0, None);
+
+        assert_eq!(inner.get(&var_name).unwrap(), Literal::Boolean(true));
+    }
+    #[test]
+    fn test_reading_shadowed_variables() {
+        let outer = Rc::new(RefCell::new(Environment::new()));
+        outer.borrow_mut().define("my_var", Literal::Boolean(true));
+
+        let mut inner = Environment::nested_in(Rc::clone(&outer));
+        inner.define("my_var", Literal::Number(33.0));
+
+        let var_name = Token::new(TokenType::Identifier, "my_var".to_string(), 0, None);
+
+        assert_eq!(inner.get(&var_name).unwrap(), Literal::Number(33.0));
+    }
     #[test]
     fn test_can_reassign_existing_variable() {
         let mut env = Environment::new();
