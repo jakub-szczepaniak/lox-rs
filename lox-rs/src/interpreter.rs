@@ -5,15 +5,16 @@ use crate::literal::*;
 use crate::stmt::*;
 use crate::token_type::*;
 use std::cell::RefCell;
+use std::rc::Rc;
 pub struct Interpreter {
-    environment: RefCell<Environment>,
+    environment: RefCell<Rc<RefCell<Environment>>>,
 }
 
 impl StmtVisitor<()> for Interpreter {
-    fn visit_block_stmt(&self, expr: &StmtBlock) -> Result<(), LoxError> {
-        todo!("Need to be implemented");
+    fn visit_block_stmt(&self, stmt_block: &StmtBlock) -> Result<(), LoxError> {
+        let env = Environment::nested_in(self.environment.borrow().clone());
+        self.execute_block(&stmt_block.statements, env)
     }
-
     fn visit_expression_stmt(&self, expr: &StmtExpression) -> Result<(), LoxError> {
         self.evaluate(&expr.expression)?;
         Ok(())
@@ -30,6 +31,7 @@ impl StmtVisitor<()> for Interpreter {
             Literal::Nil
         };
         self.environment
+            .borrow()
             .borrow_mut()
             .define(expr.name.as_string(), value);
         Ok(())
@@ -40,13 +42,14 @@ impl ExprVisitor<Literal> for Interpreter {
     fn visit_assign_expr(&self, expr: &ExprAssign) -> Result<Literal, LoxError> {
         let value = self.evaluate(&expr.value)?;
         self.environment
+            .borrow()
             .borrow_mut()
             .assign(&expr.name, value.clone())?;
         Ok(value)
     }
 
     fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<Literal, LoxError> {
-        self.environment.borrow().get(&expr.name)
+        self.environment.borrow().borrow().get(&expr.name)
     }
 
     fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<Literal, LoxError> {
@@ -174,8 +177,19 @@ impl ExprVisitor<Literal> for Interpreter {
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
-            environment: RefCell::new(Environment::new()),
+            environment: RefCell::new(Rc::new(RefCell::new(Environment::new()))),
         }
+    }
+
+    fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
+        let previous = self.environment.replace(Rc::new(RefCell::new(env)));
+
+        let result = statements
+            .iter()
+            .try_for_each(|statement| self.execute(statement));
+
+        self.environment.replace(previous);
+        result
     }
 
     fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxError> {
@@ -270,7 +284,10 @@ mod tests {
 
         let result = interp.execute(&var_statement);
         assert!(result.is_ok());
-        assert_eq!(interp.environment.borrow().get(&var).unwrap(), Literal::Nil);
+        assert_eq!(
+            interp.environment.borrow().borrow().get(&var).unwrap(),
+            Literal::Nil
+        );
     }
 
     #[test]
@@ -289,7 +306,7 @@ mod tests {
 
         assert!(result.is_ok());
         assert_eq!(
-            interp.environment.borrow().get(&var).unwrap(),
+            interp.environment.borrow().borrow().get(&var).unwrap(),
             Literal::Number(42.0)
         );
     }
