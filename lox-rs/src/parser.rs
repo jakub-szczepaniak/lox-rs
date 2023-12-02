@@ -57,6 +57,10 @@ impl<'a> Parser<'a> {
         Ok(Stmt::Var(StmtVar { name, initializer }))
     }
     fn statement(&mut self) -> Result<Stmt, LoxError> {
+        if self.is_match(&[TokenType::If]) {
+            return self.if_statement();
+        }
+
         if self.is_match(&[TokenType::Print]) {
             return self.print_statement();
         }
@@ -82,6 +86,26 @@ impl<'a> Parser<'a> {
         let value = self.expression()?;
         self.consume(TokenType::Semicolon, "Expected ';' after the statement!")?;
         Ok(Stmt::Print(StmtPrint { expression: value }))
+    }
+
+    fn if_statement(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(TokenType::LeftParen, "Expected '(' after 'if' statement!")?;
+        let condition = self.expression()?;
+        self.consume(
+            TokenType::RightParen,
+            "Expect ')' after condition expression!",
+        )?;
+        let then_branch = Box::new(self.statement()?);
+        let else_branch = if self.is_match(&[TokenType::Else]) {
+            Some(Box::new(self.statement()?))
+        } else {
+            None
+        };
+        Ok(Stmt::If(StmtIf {
+            condition,
+            then_branch,
+            else_branch,
+        }))
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {

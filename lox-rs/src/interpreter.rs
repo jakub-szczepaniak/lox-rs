@@ -36,6 +36,15 @@ impl StmtVisitor<()> for Interpreter {
             .define(expr.name.as_string(), value);
         Ok(())
     }
+    fn visit_if_stmt(&self, stmt: &StmtIf) -> Result<(), LoxError> {
+        if self.is_truthy(&self.evaluate(&stmt.condition)?) {
+            self.execute(&stmt.then_branch)
+        } else if let Some(else_branch) = &stmt.else_branch {
+            self.execute(else_branch)
+        } else {
+            Ok(())
+        }
+    }
 }
 
 impl ExprVisitor<Literal> for Interpreter {
