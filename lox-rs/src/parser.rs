@@ -62,6 +62,10 @@ impl<'a> Parser<'a> {
             return self.if_statement();
         }
 
+        if self.is_match(&[TokenType::While]) {
+            return self.while_statement();
+        }
+
         if self.is_match(&[TokenType::Print]) {
             return self.print_statement();
         }
@@ -81,6 +85,22 @@ impl<'a> Parser<'a> {
 
         self.consume(TokenType::RightBrace, "Expected '}' after block")?;
         Ok(statements)
+    }
+
+    fn while_statement(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(TokenType::LeftParen, "Expected '(' after 'while' statement")?;
+        let condition = self.expression()?;
+        self.consume(
+            TokenType::RightParen,
+            "Expected ')' after condition in 'while' statement",
+        )?;
+
+        let body = self.statement()?;
+
+        Ok(Stmt::While(StmtWhile {
+            condition,
+            body: Box::new(body),
+        }))
     }
 
     fn print_statement(&mut self) -> Result<Stmt, LoxError> {

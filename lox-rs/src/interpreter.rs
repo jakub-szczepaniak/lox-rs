@@ -45,6 +45,14 @@ impl StmtVisitor<()> for Interpreter {
             Ok(())
         }
     }
+
+    fn visit_while_stmt(&self, stmt: &StmtWhile) -> Result<(), LoxError> {
+        while self.is_truthy(&self.evaluate(&stmt.condition)?) {
+            self.execute(&stmt.body)?;
+        }
+
+        Ok(())
+    }
 }
 
 impl ExprVisitor<Literal> for Interpreter {
