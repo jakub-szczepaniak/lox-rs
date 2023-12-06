@@ -120,7 +120,7 @@ impl<'a> Parser<'a> {
     }
 
     fn assignment(&mut self) -> Result<Expr, LoxError> {
-        let expr = self.equality()?;
+        let expr = self.or()?;
 
         if self.is_match(&[TokenType::Assign]) {
             let equals = self.previous().clone();
@@ -134,6 +134,37 @@ impl<'a> Parser<'a> {
             }
             self.error(&equals, "Invalid l-value for assignment");
         }
+        Ok(expr)
+    }
+
+    fn or(&mut self) -> Result<Expr, LoxError> {
+        let mut expr = self.and()?;
+
+        while self.is_match(&[TokenType::Or]) {
+            let operator = self.previous().clone();
+            let right = Box::new(self.and()?);
+            expr = Expr::Logical(ExprLogical {
+                left: Box::new(expr),
+                operator,
+                right,
+            })
+        }
+        Ok(expr)
+    }
+
+    fn and(&mut self) -> Result<Expr, LoxError> {
+        let mut expr = self.equality()?;
+
+        while self.is_match(&[TokenType::And]) {
+            let operator = self.previous().clone();
+            let right = Box::new(self.equality()?);
+            expr = Expr::Logical(ExprLogical {
+                left: Box::new(expr),
+                operator,
+                right,
+            });
+        }
+
         Ok(expr)
     }
 

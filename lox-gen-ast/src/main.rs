@@ -27,6 +27,7 @@ fn main() -> io::Result<()> {
             "Literal  : Option<Literal> value",
             "Unary    : Token operator, Box<Expr> right",
             "Variable : Token name",
+            "Logical  : Box<Expr> left, Token operator, Box<Expr> right",
         ],
         &["error", "token", "literal"],
     )?;

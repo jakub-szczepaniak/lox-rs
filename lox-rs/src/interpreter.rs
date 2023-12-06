@@ -48,6 +48,20 @@ impl StmtVisitor<()> for Interpreter {
 }
 
 impl ExprVisitor<Literal> for Interpreter {
+    fn visit_logical_expr(&self, expr: &ExprLogical) -> Result<Literal, LoxError> {
+        let left = self.evaluate(&expr.left)?;
+
+        if expr.operator.is(TokenType::Or) {
+            if self.is_truthy(&left) {
+                return Ok(left);
+            }
+        } else if !self.is_truthy(&left) {
+            return Ok(left);
+        }
+
+        self.evaluate(&expr.right)
+    }
+
     fn visit_assign_expr(&self, expr: &ExprAssign) -> Result<Literal, LoxError> {
         let value = self.evaluate(&expr.value)?;
         self.environment
