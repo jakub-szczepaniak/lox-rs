@@ -140,7 +140,7 @@ impl Scanner {
         }
         let text: String = self.source[self.start..self.current].iter().collect();
         if let Some(literal) = Scanner::constant(text.as_str()) {
-            self.add_token_object(TokenType::Identifier, Some(literal));
+            self.add_token_object(TokenType::Constant, Some(literal));
             return;
         }
         if let Some(ttype) = Scanner::keyword(text.as_str()) {

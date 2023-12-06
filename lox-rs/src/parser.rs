@@ -212,7 +212,7 @@ impl<'a> Parser<'a> {
     }
 
     fn primary(&mut self) -> Result<Expr, LoxError> {
-        if self.is_match(&[TokenType::String, TokenType::Number]) {
+        if self.is_match(&[TokenType::String, TokenType::Number, TokenType::Constant]) {
             let tok = self.previous();
             if let Some(value) = &tok.literal {
                 return Ok(Expr::Literal(ExprLiteral {

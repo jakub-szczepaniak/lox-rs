@@ -26,6 +26,7 @@ pub enum TokenType {
     Identifier,
     String,
     Number,
+    Constant,
 
     // Keywords.
     And,
