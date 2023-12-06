@@ -1,3 +1,5 @@
+use crate::literal::Literal;
+
 use crate::error::LoxError;
 use crate::expr::*;
 use crate::stmt::*;
@@ -62,6 +64,9 @@ impl<'a> Parser<'a> {
             return self.if_statement();
         }
 
+        if self.is_match(&[TokenType::For]) {
+            return self.for_statement();
+        }
         if self.is_match(&[TokenType::While]) {
             return self.while_statement();
         }
@@ -87,6 +92,58 @@ impl<'a> Parser<'a> {
         Ok(statements)
     }
 
+    fn for_statement(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(TokenType::LeftParen, "Expected '(' after 'for' keyword")?;
+        let initializer = if self.is_match(&[TokenType::Semicolon]) {
+            None
+        } else if self.is_match(&[TokenType::Var]) {
+            Some(self.var_declaration()?)
+        } else {
+            Some(self.expression_statement()?)
+        };
+        let condition = if self.is_match(&[TokenType::Semicolon]) {
+            None
+        } else {
+            Some(self.expression()?)
+        };
+
+        self.consume(TokenType::Semicolon, "Expected ';' after loop condition.")?;
+
+        let increment = if self.check(TokenType::RightParen) {
+            None
+        } else {
+            Some(self.expression()?)
+        };
+
+        self.consume(TokenType::RightParen, "Expected ')' after for clauses.")?;
+
+        let mut body = self.statement()?;
+
+        if let Some(incr) = increment {
+            body = Stmt::Block(StmtBlock {
+                statements: vec![body, Stmt::Expression(StmtExpression { expression: incr })],
+            });
+        }
+
+        body = Stmt::While(StmtWhile {
+            condition: if let Some(cond) = condition {
+                cond
+            } else {
+                Expr::Literal(ExprLiteral {
+                    value: Some(Literal::Boolean(true)),
+                })
+            },
+            body: Box::new(body),
+        });
+
+        if let Some(init) = initializer {
+            body = Stmt::Block(StmtBlock {
+                statements: vec![init, body],
+            })
+        }
+
+        Ok(body)
+    }
     fn while_statement(&mut self) -> Result<Stmt, LoxError> {
         self.consume(TokenType::LeftParen, "Expected '(' after 'while' statement")?;
         let condition = self.expression()?;
