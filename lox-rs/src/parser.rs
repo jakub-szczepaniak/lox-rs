@@ -56,6 +56,7 @@ impl<'a> Parser<'a> {
 
         Ok(Stmt::Var(StmtVar { name, initializer }))
     }
+
     fn statement(&mut self) -> Result<Stmt, LoxError> {
         if self.is_match(&[TokenType::If]) {
             return self.if_statement();
@@ -78,7 +79,7 @@ impl<'a> Parser<'a> {
             statements.push(self.declaration()?);
         }
 
-        self.consume(TokenType::RightBrace, "Expected '}' after block");
+        self.consume(TokenType::RightBrace, "Expected '}' after block")?;
         Ok(statements)
     }
 
