@@ -8,9 +8,21 @@ use std::cell::RefCell;
 use std::rc::Rc;
 pub struct Interpreter {
     environment: RefCell<Rc<RefCell<Environment>>>,
+    in_loop: RefCell<usize>,
 }
 
 impl StmtVisitor<()> for Interpreter {
+    fn visit_break_stmt(&self, expr: &StmtBreak) -> Result<(), LoxResult> {
+        if *self.in_loop.borrow() == 0 {
+            Err(LoxResult::interp_error(
+                &expr.token,
+                "Break statement outside of the loop!",
+            ))
+        } else {
+            Err(LoxResult::Break)
+        }
+    }
+
     fn visit_block_stmt(&self, stmt_block: &StmtBlock) -> Result<(), LoxResult> {
         let env = Environment::nested_in(self.environment.borrow().clone());
         self.execute_block(&stmt_block.statements, env)
@@ -47,10 +59,15 @@ impl StmtVisitor<()> for Interpreter {
     }
 
     fn visit_while_stmt(&self, stmt: &StmtWhile) -> Result<(), LoxResult> {
+        *self.in_loop.borrow_mut() += 1;
         while self.is_truthy(&self.evaluate(&stmt.condition)?) {
-            self.execute(&stmt.body)?;
+            match self.execute(&stmt.body) {
+                Err(LoxResult::Break) => break,
+                Err(e) => return Err(e),
+                Ok(_) => {}
+            }
         }
-
+        *self.in_loop.borrow_mut() -= 1;
         Ok(())
     }
 }
@@ -209,6 +226,7 @@ impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
             environment: RefCell::new(Rc::new(RefCell::new(Environment::new()))),
+            in_loop: RefCell::new(0),
         }
     }
 

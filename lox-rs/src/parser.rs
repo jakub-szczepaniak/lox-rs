@@ -64,6 +64,15 @@ impl<'a> Parser<'a> {
             return self.if_statement();
         }
 
+        if self.is_match(&[TokenType::Break]) {
+            let token = self.peek().clone();
+            self.consume(
+                TokenType::Semicolon,
+                "Expected ';' after 'break' statement!",
+            )?;
+            return Ok(Stmt::Break(StmtBreak { token }));
+        }
+
         if self.is_match(&[TokenType::For]) {
             return self.for_statement();
         }

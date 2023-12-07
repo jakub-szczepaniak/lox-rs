@@ -41,6 +41,7 @@ fn main() -> io::Result<()> {
             "Print : Expr expression",
             "Var : Token name, Option<Expr> initializer",
             "While : Expr condition, Box<Stmt> body",
+            "Break : Token token",
         ],
         &["error", "expr", "token"],
     )?;

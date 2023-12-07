@@ -6,7 +6,7 @@ pub enum LoxResult {
     ParseError { token: Token, message: String },
     RuntimeError { token: Token, message: String },
     ScannerError { line: usize, message: String },
-    //Break
+    Break,
 }
 
 impl fmt::Display for LoxResult {
@@ -19,6 +19,7 @@ impl fmt::Display for LoxResult {
                 write!(f, "Line: {}, Error: {}", token.line, message)
             }
             Self::ScannerError { line, message } => write!(f, "Line: {}, Error: {}", line, message),
+            Self::Break => write!(f, ""),
         }
     }
 }
@@ -28,7 +29,7 @@ impl LoxResult {
             line,
             message: message.to_string(),
         };
-        err.report("");
+        err.report();
         err
     }
     pub fn interp_error(token: &Token, message: &str) -> LoxResult {
@@ -36,7 +37,7 @@ impl LoxResult {
             token: token.clone(),
             message: message.to_string(),
         };
-        err.report("");
+        err.report();
         err
     }
     pub fn parse_error(token: &Token, message: &str) -> LoxResult {
@@ -44,11 +45,11 @@ impl LoxResult {
             token: token.clone(),
             message: message.to_string(),
         };
-        err.report("");
+        err.report();
         err
     }
 
-    pub fn report(&self, loc: &str) {
+    pub fn report(&self) {
         match self {
             Self::ParseError { token, message } | Self::RuntimeError { token, message } => {
                 if token.is(TokenType::Eof) {
@@ -58,8 +59,9 @@ impl LoxResult {
                 }
             }
             Self::ScannerError { line, message } => {
-                eprintln!("Line: {}: Error: {}", line, message.to_string());
+                eprintln!("Line: {}: Error: {}", line, message);
             }
+            Self::Break => {}
         }
     }
 }
