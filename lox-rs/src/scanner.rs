@@ -1,4 +1,4 @@
-use crate::error::LoxError;
+use crate::error::LoxResult;
 use crate::literal::Literal;
 use crate::token::Token;
 use crate::token_type::TokenType;
@@ -20,8 +20,8 @@ impl Scanner {
             line: 1,
         }
     }
-    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxError> {
-        let mut had_error: Option<LoxError> = None;
+    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxResult> {
+        let mut had_error: Option<LoxResult> = None;
 
         while !self.is_at_end() {
             self.start = self.current;
@@ -42,7 +42,7 @@ impl Scanner {
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
-    fn scan_token(&mut self) -> Result<(), LoxError> {
+    fn scan_token(&mut self) -> Result<(), LoxResult> {
         let c = self.advance();
         match c {
             '(' => self.add_token(TokenType::LeftParen),
@@ -100,7 +100,7 @@ impl Scanner {
             '"' => self.string()?,
             '0'..='9' => self.number()?,
             _ if c.is_ascii_alphabetic() || c == '_' => self.identifier(),
-            _ => return Err(LoxError::error(self.line, "Unexpected character")),
+            _ => return Err(LoxResult::error(self.line, "Unexpected character")),
         }
         Ok(())
     }
@@ -157,7 +157,7 @@ impl Scanner {
         }
     }
 
-    fn number(&mut self) -> Result<(), LoxError> {
+    fn number(&mut self) -> Result<(), LoxResult> {
         while Scanner::is_digit(self.peek()) {
             self.advance();
         }
@@ -183,7 +183,7 @@ impl Scanner {
             None => false,
         }
     }
-    fn string(&mut self) -> Result<(), LoxError> {
+    fn string(&mut self) -> Result<(), LoxResult> {
         while let Some(ch) = self.peek() {
             match ch {
                 '"' => break,
@@ -193,7 +193,7 @@ impl Scanner {
             self.advance();
         }
         if self.is_at_end() {
-            return Err(LoxError::error(self.line, "Unterminated string"));
+            return Err(LoxResult::error(self.line, "Unterminated string"));
         }
 
         self.advance();

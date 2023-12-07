@@ -1,56 +1,65 @@
 use std::fmt;
 
 use crate::{token::Token, token_type::TokenType};
-
 #[derive(Debug)]
-pub struct LoxError {
-    pub token: Option<Token>,
-    pub message: String,
-    pub line: usize,
+pub enum LoxResult {
+    ParseError { token: Token, message: String },
+    RuntimeError { token: Token, message: String },
+    ScannerError { line: usize, message: String },
+    //Break
 }
 
-impl fmt::Display for LoxError {
+impl fmt::Display for LoxResult {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Line: {}, Error: {}", self.line, self.message)
+        match self {
+            Self::ParseError { token, message } => {
+                write!(f, "Line: {}, Error: {}", token.line, message)
+            }
+            Self::RuntimeError { token, message } => {
+                write!(f, "Line: {}, Error: {}", token.line, message)
+            }
+            Self::ScannerError { line, message } => write!(f, "Line: {}, Error: {}", line, message),
+        }
     }
 }
-impl LoxError {
-    pub fn error(line: usize, message: &str) -> LoxError {
-        let err = LoxError {
-            token: None,
-            message: message.to_string(),
+impl LoxResult {
+    pub fn error(line: usize, message: &str) -> LoxResult {
+        let err = LoxResult::ScannerError {
             line,
-        };
-        err.report("");
-        err
-    }
-    pub fn interp_error(token: &Token, message: &str) -> LoxError {
-        let err = LoxError {
-            token: Some(token.clone()),
             message: message.to_string(),
-            line: token.line,
         };
         err.report("");
         err
     }
-    pub fn parse_error(token: &Token, message: &str) -> LoxError {
-        let err = LoxError {
-            token: Some(token.clone()),
+    pub fn interp_error(token: &Token, message: &str) -> LoxResult {
+        let err = LoxResult::RuntimeError {
+            token: token.clone(),
             message: message.to_string(),
-            line: token.line,
         };
         err.report("");
         err
     }
+    pub fn parse_error(token: &Token, message: &str) -> LoxResult {
+        let err = LoxResult::ParseError {
+            token: token.clone(),
+            message: message.to_string(),
+        };
+        err.report("");
+        err
+    }
+
     pub fn report(&self, loc: &str) {
-        if let Some(token) = &self.token {
-            if token.is(TokenType::Eof) {
-                eprintln!("{} at end: {}", token.line, self.message)
-            } else {
-                eprintln!("{} at '{}' : {} ", token.line, token.lexeme, self.message)
+        match self {
+            Self::ParseError { token, message } | Self::RuntimeError { token, message } => {
+                if token.is(TokenType::Eof) {
+                    eprintln!("Line: {} at end: {}", token.line, message)
+                } else {
+                    eprintln!("Line: {} at '{}' : {} ", token.line, token.lexeme, message);
+                }
             }
-        } else {
-            eprintln!("[line {}:{}] Error:{}", self.line, loc, self.message)
+            Self::ScannerError { line, message } => {
+                eprintln!("Line: {}: Error: {}", line, message.to_string());
+            }
         }
     }
 }

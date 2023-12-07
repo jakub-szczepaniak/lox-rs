@@ -111,7 +111,7 @@ fn prepare_enum(
 
     writeln!(file, "impl {base_name} {{")?;
 
-    writeln!(file,"    pub fn accept<T>(&self, visitor: &dyn {base_name}Visitor<T>) -> Result<T, LoxError> {{")?;
+    writeln!(file,"    pub fn accept<T>(&self, visitor: &dyn {base_name}Visitor<T>) -> Result<T, LoxResult> {{")?;
 
     writeln!(file, "        match self {{")?;
 
@@ -154,7 +154,7 @@ fn prepare_trait(
     for t in tree_types {
         writeln!(
             file,
-            "    fn visit_{}_{}(&self, expr: &{}) -> Result<T, LoxError> ;",
+            "    fn visit_{}_{}(&self, expr: &{}) -> Result<T, LoxResult> ;",
             t.base_class.to_lowercase(),
             base_name.to_lowercase(),
             t.class_name
@@ -173,7 +173,7 @@ fn prepare_visitors(
         writeln!(file, "impl {} {{", t.class_name)?;
         writeln!(
             file,
-            "    pub fn accept<T>(&self, visitor: &dyn {}Visitor<T>) -> Result<T, LoxError> {{",
+            "    pub fn accept<T>(&self, visitor: &dyn {}Visitor<T>) -> Result<T, LoxResult> {{",
             base_name
         )?;
         writeln!(

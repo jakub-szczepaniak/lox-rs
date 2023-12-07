@@ -3,7 +3,7 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::{error::LoxError, literal::Literal, token::Token};
+use crate::{error::LoxResult, literal::Literal, token::Token};
 #[derive(Clone)]
 pub struct Environment {
     values: HashMap<String, Literal>,
@@ -35,27 +35,27 @@ impl Environment {
         self.values.insert(var_name.to_string(), value);
     }
 
-    pub fn get(&self, token: &Token) -> Result<Literal, LoxError> {
+    pub fn get(&self, token: &Token) -> Result<Literal, LoxResult> {
         if let Some(value) = self.values.get(token.as_string()) {
             Ok(value.clone())
         } else if let Some(outer) = &self.outer {
             return outer.borrow().get(token);
         } else {
-            Err(LoxError::interp_error(
+            Err(LoxResult::interp_error(
                 &token.clone(),
                 &format!("Undefined variable: {}", token.as_string()),
             ))
         }
     }
 
-    pub fn assign(&mut self, name: &Token, value: Literal) -> Result<(), LoxError> {
+    pub fn assign(&mut self, name: &Token, value: Literal) -> Result<(), LoxResult> {
         if let Entry::Occupied(mut entry) = self.values.entry(name.as_string().to_string()) {
             entry.insert(value);
             Ok(())
         } else if let Some(outer) = &self.outer {
             outer.borrow_mut().assign(name, value)
         } else {
-            Err(LoxError::interp_error(
+            Err(LoxResult::interp_error(
                 name,
                 &format!("Undefined variable: {}", name.as_string()),
             ))

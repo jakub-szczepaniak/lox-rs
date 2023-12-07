@@ -4,7 +4,7 @@ mod parser;
 mod scanner;
 mod token;
 mod token_type;
-use error::LoxError;
+use error::LoxResult;
 use scanner::Scanner;
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
@@ -78,7 +78,7 @@ impl Lox {
             let _ = stdout().flush();
         }
     }
-    fn run(&self, source: String) -> Result<(), LoxError> {
+    fn run(&self, source: String) -> Result<(), LoxResult> {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
         let mut parser = parser::Parser::new(tokens);

@@ -1,5 +1,5 @@
 use crate::environment::*;
-use crate::error::LoxError;
+use crate::error::LoxResult;
 use crate::expr::*;
 use crate::literal::*;
 use crate::stmt::*;
@@ -11,20 +11,20 @@ pub struct Interpreter {
 }
 
 impl StmtVisitor<()> for Interpreter {
-    fn visit_block_stmt(&self, stmt_block: &StmtBlock) -> Result<(), LoxError> {
+    fn visit_block_stmt(&self, stmt_block: &StmtBlock) -> Result<(), LoxResult> {
         let env = Environment::nested_in(self.environment.borrow().clone());
         self.execute_block(&stmt_block.statements, env)
     }
-    fn visit_expression_stmt(&self, expr: &StmtExpression) -> Result<(), LoxError> {
+    fn visit_expression_stmt(&self, expr: &StmtExpression) -> Result<(), LoxResult> {
         self.evaluate(&expr.expression)?;
         Ok(())
     }
-    fn visit_print_stmt(&self, expr: &StmtPrint) -> Result<(), LoxError> {
+    fn visit_print_stmt(&self, expr: &StmtPrint) -> Result<(), LoxResult> {
         let value = self.evaluate(&expr.expression)?;
         println!("{}", value);
         Ok(())
     }
-    fn visit_var_stmt(&self, expr: &StmtVar) -> Result<(), LoxError> {
+    fn visit_var_stmt(&self, expr: &StmtVar) -> Result<(), LoxResult> {
         let value = if let Some(initializer) = &expr.initializer {
             self.evaluate(initializer)?
         } else {
@@ -36,7 +36,7 @@ impl StmtVisitor<()> for Interpreter {
             .define(expr.name.as_string(), value);
         Ok(())
     }
-    fn visit_if_stmt(&self, stmt: &StmtIf) -> Result<(), LoxError> {
+    fn visit_if_stmt(&self, stmt: &StmtIf) -> Result<(), LoxResult> {
         if self.is_truthy(&self.evaluate(&stmt.condition)?) {
             self.execute(&stmt.then_branch)
         } else if let Some(else_branch) = &stmt.else_branch {
@@ -46,7 +46,7 @@ impl StmtVisitor<()> for Interpreter {
         }
     }
 
-    fn visit_while_stmt(&self, stmt: &StmtWhile) -> Result<(), LoxError> {
+    fn visit_while_stmt(&self, stmt: &StmtWhile) -> Result<(), LoxResult> {
         while self.is_truthy(&self.evaluate(&stmt.condition)?) {
             self.execute(&stmt.body)?;
         }
@@ -56,7 +56,7 @@ impl StmtVisitor<()> for Interpreter {
 }
 
 impl ExprVisitor<Literal> for Interpreter {
-    fn visit_logical_expr(&self, expr: &ExprLogical) -> Result<Literal, LoxError> {
+    fn visit_logical_expr(&self, expr: &ExprLogical) -> Result<Literal, LoxResult> {
         let left = self.evaluate(&expr.left)?;
 
         if expr.operator.is(TokenType::Or) {
@@ -70,7 +70,7 @@ impl ExprVisitor<Literal> for Interpreter {
         self.evaluate(&expr.right)
     }
 
-    fn visit_assign_expr(&self, expr: &ExprAssign) -> Result<Literal, LoxError> {
+    fn visit_assign_expr(&self, expr: &ExprAssign) -> Result<Literal, LoxResult> {
         let value = self.evaluate(&expr.value)?;
         self.environment
             .borrow()
@@ -79,35 +79,36 @@ impl ExprVisitor<Literal> for Interpreter {
         Ok(value)
     }
 
-    fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<Literal, LoxError> {
+    fn visit_variable_expr(&self, expr: &ExprVariable) -> Result<Literal, LoxResult> {
         self.environment.borrow().borrow().get(&expr.name)
     }
 
-    fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<Literal, LoxError> {
+    fn visit_binary_expr(&self, expr: &ExprBinary) -> Result<Literal, LoxResult> {
         let left = self.evaluate(&expr.left)?;
         let right = self.evaluate(&expr.right)?;
 
         match expr.operator.token_type() {
             TokenType::Minus => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x - y)),
-                _ => Err(LoxError::interp_error(
+                _ => Err(LoxResult::interp_error(
                     &expr.operator,
                     "Unsupported operands",
                 )),
             },
             TokenType::Slash => match (left, right) {
-                (Literal::Number(_), Literal::Number(0.0)) => {
-                    Err(LoxError::interp_error(&expr.operator, "Cannot divide by 0"))
-                }
+                (Literal::Number(_), Literal::Number(0.0)) => Err(LoxResult::interp_error(
+                    &expr.operator,
+                    "Cannot divide by 0",
+                )),
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x / y)),
-                _ => Err(LoxError::interp_error(
+                _ => Err(LoxResult::interp_error(
                     &expr.operator,
                     "Unsupported operands",
                 )),
             },
             TokenType::Star => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Number(x * y)),
-                _ => Err(LoxError::interp_error(
+                _ => Err(LoxResult::interp_error(
                     &expr.operator,
                     "Unsuported operands",
                 )),
@@ -123,35 +124,35 @@ impl ExprVisitor<Literal> for Interpreter {
                 (Literal::Number(x), Literal::String(y)) => {
                     Ok(Literal::String(format!("{}{}", x, y)))
                 }
-                _ => Err(LoxError::interp_error(
+                _ => Err(LoxResult::interp_error(
                     &expr.operator,
                     "Unsupported operands",
                 )),
             },
             TokenType::Greater => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x > y)),
-                _ => Err(LoxError::interp_error(
+                _ => Err(LoxResult::interp_error(
                     &expr.operator,
                     "Unsuported operands",
                 )),
             },
             TokenType::GreaterEqual => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x >= y)),
-                _ => Err(LoxError::interp_error(
+                _ => Err(LoxResult::interp_error(
                     &expr.operator,
                     "Unsuported operands",
                 )),
             },
             TokenType::Less => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x < y)),
-                _ => Err(LoxError::interp_error(
+                _ => Err(LoxResult::interp_error(
                     &expr.operator,
                     "Unsuported operands",
                 )),
             },
             TokenType::LessEqual => match (left, right) {
                 (Literal::Number(x), Literal::Number(y)) => Ok(Literal::Boolean(x <= y)),
-                _ => Err(LoxError::interp_error(
+                _ => Err(LoxResult::interp_error(
                     &expr.operator,
                     "Unsuported operands",
                 )),
@@ -175,19 +176,19 @@ impl ExprVisitor<Literal> for Interpreter {
             }
         }
     }
-    fn visit_grouping_expr(&self, expr: &ExprGrouping) -> Result<Literal, LoxError> {
+    fn visit_grouping_expr(&self, expr: &ExprGrouping) -> Result<Literal, LoxResult> {
         self.evaluate(&expr.expression)
     }
 
-    fn visit_literal_expr(&self, expr: &ExprLiteral) -> Result<Literal, LoxError> {
+    fn visit_literal_expr(&self, expr: &ExprLiteral) -> Result<Literal, LoxResult> {
         if let Some(value) = &expr.value {
             Ok(value.clone())
         } else {
-            Err(LoxError::error(0, "Cannot evaluate expression"))
+            Err(LoxResult::error(0, "Cannot evaluate expression"))
         }
     }
 
-    fn visit_unary_expr(&self, expr: &ExprUnary) -> Result<Literal, LoxError> {
+    fn visit_unary_expr(&self, expr: &ExprUnary) -> Result<Literal, LoxResult> {
         let right = self.evaluate(&expr.right)?;
 
         match expr.operator.token_type() {
@@ -196,10 +197,9 @@ impl ExprVisitor<Literal> for Interpreter {
                 _ => Ok(Literal::Nil),
             },
             TokenType::Bang => Ok(Literal::Boolean(!self.is_truthy(&right))),
-            _ => Err(LoxError {
-                token: Some(expr.operator.clone()),
+            _ => Err(LoxResult::RuntimeError {
+                token: expr.operator.clone(),
                 message: "Mismatch type to operator".to_string(),
-                line: expr.operator.line,
             }),
         }
     }
@@ -212,7 +212,7 @@ impl Interpreter {
         }
     }
 
-    fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
+    fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxResult> {
         let previous = self.environment.replace(Rc::new(RefCell::new(env)));
 
         let result = statements
@@ -223,10 +223,10 @@ impl Interpreter {
         result
     }
 
-    fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxError> {
+    fn evaluate(&self, expr: &Expr) -> Result<Literal, LoxResult> {
         expr.accept(self)
     }
-    fn execute(&self, stmt: &Stmt) -> Result<(), LoxError> {
+    fn execute(&self, stmt: &Stmt) -> Result<(), LoxResult> {
         stmt.accept(self)
     }
     fn is_truthy(&self, literal: &Literal) -> bool {
