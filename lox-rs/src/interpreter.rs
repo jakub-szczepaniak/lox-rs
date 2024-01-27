@@ -1,3 +1,4 @@
+use crate::callable::*;
 use crate::environment::*;
 use crate::error::LoxResult;
 use crate::expr::*;
@@ -73,6 +74,31 @@ impl StmtVisitor<()> for Interpreter {
 }
 
 impl ExprVisitor<Literal> for Interpreter {
+    fn visit_call_expr(&self, expr: &ExprCall) -> Result<Literal, LoxResult> {
+        let callee = self.evaluate(&expr.callee)?;
+        let mut arguments = Vec::new();
+        for argument in &expr.arguments {
+            arguments.push(self.evaluate(argument)?);
+        }
+
+        if let Literal::Func(callable) = callee {
+            let arity = callable.arity();
+            let received = arguments.len();
+            if arity != received {
+                return Err(LoxResult::interp_error(
+                    &expr.paren,
+                    "Expected {arity}, received {received} ",
+                ));
+            }
+            callable.call(self, arguments)
+        } else {
+            Err(LoxResult::interp_error(
+                &expr.paren,
+                "Can only call functions and classes!",
+            ))
+        }
+    }
+
     fn visit_logical_expr(&self, expr: &ExprLogical) -> Result<Literal, LoxResult> {
         let left = self.evaluate(&expr.left)?;
 

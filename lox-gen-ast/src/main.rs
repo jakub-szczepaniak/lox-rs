@@ -23,13 +23,19 @@ fn main() -> io::Result<()> {
         &[
             "Assign   : Token name, Box<Expr> value",
             "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
+            "Call     : Rc<Expr> callee, Token paren, Vec<Expr> arguments",
             "Grouping : Box<Expr> expression",
             "Literal  : Option<Literal> value",
             "Unary    : Token operator, Box<Expr> right",
             "Variable : Token name",
             "Logical  : Box<Expr> left, Token operator, Box<Expr> right",
         ],
-        &["error", "token", "literal"],
+        &[
+            "crate::error::*",
+            "crate::token::*",
+            "crate::literal::*",
+            "std::rc::Rc",
+        ],
     )?;
     define_ast(
         output_dir,
@@ -43,7 +49,7 @@ fn main() -> io::Result<()> {
             "While : Expr condition, Box<Stmt> body",
             "Break : Token token",
         ],
-        &["error", "expr", "token"],
+        &["crate::error::*", "crate::expr::*", "crate::token::*"],
     )?;
     Ok(())
 }
@@ -73,7 +79,7 @@ fn define_ast(
 
 fn prepare_imports(mut file: &std::fs::File, includes: &[&str]) -> Result<(), io::Error> {
     for incl in includes {
-        writeln!(file, "use crate::{}::*;", incl)?;
+        writeln!(file, "use {};", incl)?;
     }
     Ok(())
 }

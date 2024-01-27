@@ -10,6 +10,7 @@ use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
 use crate::interpreter::Interpreter;
+mod callable;
 mod environment;
 mod expr;
 mod interpreter;

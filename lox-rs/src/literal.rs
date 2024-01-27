@@ -1,3 +1,4 @@
+use crate::callable::*;
 use std::fmt::{self};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -7,6 +8,7 @@ pub enum Literal {
     Number(f64),
     Boolean(bool),
     Nil,
+    Func(Callable),
 }
 
 impl fmt::Display for Literal {
@@ -17,6 +19,7 @@ impl fmt::Display for Literal {
             Literal::Boolean(x) => write!(f, "{x}"),
             Literal::Nil => write!(f, "nil"),
             Literal::Identifier(x) => write!(f, "var: {x}"),
+            Literal::Func(_) => write!(f, "<function>"),
         };
         Ok(())
     }
