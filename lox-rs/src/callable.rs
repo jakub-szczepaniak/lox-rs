@@ -5,8 +5,7 @@ use core::fmt::Debug;
 use std::rc::Rc;
 #[derive(Clone)]
 pub struct Callable {
-    func: Rc<dyn LoxCallable>,
-    arity: usize,
+    pub func: Rc<dyn LoxCallable>,
 }
 
 impl Debug for Callable {
@@ -31,12 +30,12 @@ impl LoxCallable for Callable {
     fn call(
         &self,
         interpreter: &Interpreter,
-        argument: Vec<Literal>,
+        arguments: Vec<Literal>,
     ) -> Result<Literal, LoxResult> {
-        Ok(Literal::Nil)
+        self.func.call(interpreter, arguments)
     }
 
     fn arity(&self) -> usize {
-        self.arity
+        self.func.arity()
     }
 }

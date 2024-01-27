@@ -15,6 +15,7 @@ mod environment;
 mod expr;
 mod interpreter;
 mod literal;
+mod native_functions;
 mod stmt;
 
 fn main() {

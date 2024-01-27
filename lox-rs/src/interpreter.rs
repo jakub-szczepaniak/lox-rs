@@ -3,11 +3,13 @@ use crate::environment::*;
 use crate::error::LoxResult;
 use crate::expr::*;
 use crate::literal::*;
+use crate::native_functions::*;
 use crate::stmt::*;
 use crate::token_type::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 pub struct Interpreter {
+    globals: Rc<RefCell<Environment>>,
     environment: RefCell<Rc<RefCell<Environment>>>,
     in_loop: RefCell<usize>,
 }
@@ -248,10 +250,26 @@ impl ExprVisitor<Literal> for Interpreter {
     }
 }
 
+impl Default for Interpreter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Interpreter {
     pub fn new() -> Interpreter {
+        let globals = Rc::new(RefCell::new(Environment::new()));
+
+        globals.borrow_mut().define(
+            "clock",
+            Literal::Func(Callable {
+                func: Rc::new(LoxClock {}),
+            }),
+        );
+
         Interpreter {
-            environment: RefCell::new(Rc::new(RefCell::new(Environment::new()))),
+            globals: Rc::clone(&globals),
+            environment: RefCell::new(Rc::clone(&globals)),
             in_loop: RefCell::new(0),
         }
     }
