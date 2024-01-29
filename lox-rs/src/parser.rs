@@ -34,7 +34,9 @@ impl<'a> Parser<'a> {
     }
 
     fn declaration(&mut self) -> Result<Stmt, LoxResult> {
-        let result = if self.is_match(&[TokenType::Var]) {
+        let result = if self.is_match(&[TokenType::Fun]) {
+            self.func_declaration("function")
+        } else if self.is_match(&[TokenType::Var]) {
             self.var_declaration()
         } else {
             self.statement()
@@ -45,6 +47,36 @@ impl<'a> Parser<'a> {
         }
         result
     }
+    fn func_declaration(&mut self, kind: &str) -> Result<Stmt, LoxResult> {
+        let name: Token = self.consume(TokenType::Identifier, &format!("Expected {kind} name!"))?;
+        self.consume(
+            TokenType::LeftParen,
+            &format!("Expect '(' after {kind} name"),
+        )?;
+        let mut params = Vec::new();
+        if !self.check(TokenType::RightParen) {
+            params.push(self.consume(TokenType::Identifier, "Expected parameter name")?);
+            while self.is_match(&[TokenType::Comma]) {
+                if params.len() > 255 && !self.had_error {
+                    let look = self.peek().clone();
+                    self.error(&look, "Function cannot have more than 255 parameters");
+                }
+                params.push(self.consume(TokenType::Identifier, "Expected parameter name")?);
+            }
+        }
+        self.consume(
+            TokenType::RightParen,
+            "Expect ')' after function declaration",
+        )?;
+
+        self.consume(
+            TokenType::LeftBrace,
+            &format!("Expect '{{' befor {kind} body"),
+        )?;
+        let body = self.block()?;
+        Ok(Stmt::Function(StmtFunction { name, params, body }))
+    }
+
     fn var_declaration(&mut self) -> Result<Stmt, LoxResult> {
         let name = self.consume(TokenType::Identifier, "Expected variable name")?;
         let initializer = if self.is_match(&[TokenType::Assign]) {

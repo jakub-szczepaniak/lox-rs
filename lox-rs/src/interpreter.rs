@@ -73,6 +73,9 @@ impl StmtVisitor<()> for Interpreter {
         *self.in_loop.borrow_mut() -= 1;
         Ok(())
     }
+    fn visit_function_stmt(&self, expr: &StmtFunction) -> Result<(), LoxResult> {
+        Ok(())
+    }
 }
 
 impl ExprVisitor<Literal> for Interpreter {
