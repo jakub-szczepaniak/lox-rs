@@ -15,6 +15,7 @@ mod environment;
 mod expr;
 mod interpreter;
 mod literal;
+mod lox_function;
 mod native_functions;
 mod stmt;
 

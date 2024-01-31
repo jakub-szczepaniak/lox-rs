@@ -3,6 +3,7 @@ use crate::interpreter::*;
 use crate::literal::*;
 use core::fmt::{Debug, Display};
 use std::rc::Rc;
+
 #[derive(Clone)]
 pub struct Callable {
     pub func: Rc<dyn LoxCallable>,
