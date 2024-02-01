@@ -73,8 +73,12 @@ impl<'a> Parser<'a> {
             TokenType::LeftBrace,
             &format!("Expect '{{' befor {kind} body"),
         )?;
-        let body = self.block()?;
-        Ok(Stmt::Function(StmtFunction { name, params, body }))
+        let body = Rc::new(self.block()?);
+        Ok(Stmt::Function(StmtFunction {
+            name,
+            params: Rc::new(params),
+            body,
+        }))
     }
 
     fn var_declaration(&mut self) -> Result<Stmt, LoxResult> {
@@ -394,6 +398,7 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
+            arguments.push(self.expression()?);
         }
         let paren = self.consume(TokenType::RightParen, "Expected ')' after function call!")?;
 

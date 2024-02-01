@@ -3,13 +3,14 @@ use crate::environment::*;
 use crate::error::LoxResult;
 use crate::expr::*;
 use crate::literal::*;
+use crate::lox_function::*;
 use crate::native_functions::*;
 use crate::stmt::*;
 use crate::token_type::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 pub struct Interpreter {
-    globals: Rc<RefCell<Environment>>,
+    pub globals: Rc<RefCell<Environment>>,
     environment: RefCell<Rc<RefCell<Environment>>>,
     in_loop: RefCell<usize>,
 }
@@ -73,7 +74,14 @@ impl StmtVisitor<()> for Interpreter {
         *self.in_loop.borrow_mut() -= 1;
         Ok(())
     }
-    fn visit_function_stmt(&self, expr: &StmtFunction) -> Result<(), LoxResult> {
+    fn visit_function_stmt(&self, stmt: &StmtFunction) -> Result<(), LoxResult> {
+        let function = LoxFunction::new(stmt);
+        self.environment.borrow().borrow_mut().define(
+            stmt.name.as_string(),
+            Literal::Func(Callable {
+                func: Rc::new(function),
+            }),
+        );
         Ok(())
     }
 }
@@ -277,7 +285,7 @@ impl Interpreter {
         }
     }
 
-    fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxResult> {
+    pub fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxResult> {
         let previous = self.environment.replace(Rc::new(RefCell::new(env)));
 
         let result = statements

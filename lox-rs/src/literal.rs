@@ -19,7 +19,7 @@ impl fmt::Display for Literal {
             Literal::Boolean(x) => write!(f, "{x}"),
             Literal::Nil => write!(f, "nil"),
             Literal::Identifier(x) => write!(f, "var: {x}"),
-            Literal::Func(_) => write!(f, "<function>"),
+            Literal::Func(x) => write!(f, "fn {x}"),
         };
         Ok(())
     }
