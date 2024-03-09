@@ -40,6 +40,14 @@ impl StmtVisitor<()> for Interpreter {
         println!("{}", value);
         Ok(())
     }
+    fn visit_return_stmt(&self, stmt: &StmtReturn) -> Result<(), LoxResult> {
+        if let Some(value) = &stmt.value {
+            Err(LoxResult::return_value(self.evaluate(value)?))
+        } else {
+            Err(LoxResult::return_value(Literal::Nil))
+        }
+    }
+
     fn visit_var_stmt(&self, expr: &StmtVar) -> Result<(), LoxResult> {
         let value = if let Some(initializer) = &expr.initializer {
             self.evaluate(initializer)?

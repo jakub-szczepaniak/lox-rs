@@ -110,7 +110,9 @@ impl<'a> Parser<'a> {
             )?;
             return Ok(Stmt::Break(StmtBreak { token }));
         }
-
+        if self.is_match(&[TokenType::Return]) {
+            return self.return_statement();
+        }
         if self.is_match(&[TokenType::For]) {
             return self.for_statement();
         }
@@ -212,7 +214,17 @@ impl<'a> Parser<'a> {
         self.consume(TokenType::Semicolon, "Expected ';' after the statement!")?;
         Ok(Stmt::Print(StmtPrint { expression: value }))
     }
+    fn return_statement(&mut self) -> Result<Stmt, LoxResult> {
+        let keyword = self.previous().clone();
+        let value = if self.check(TokenType::Semicolon) {
+            None
+        } else {
+            Some(self.expression()?)
+        };
+        self.consume(TokenType::Semicolon, "Expected ';' after the statement")?;
 
+        Ok(Stmt::Return(StmtReturn { keyword, value }))
+    }
     fn if_statement(&mut self) -> Result<Stmt, LoxResult> {
         self.consume(TokenType::LeftParen, "Expected '(' after 'if' statement!")?;
         let condition = self.expression()?;

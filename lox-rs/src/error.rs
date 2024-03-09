@@ -1,12 +1,13 @@
 use std::fmt;
 
-use crate::{token::Token, token_type::TokenType};
+use crate::{literal::Literal, token::Token, token_type::TokenType};
 #[derive(Debug)]
 pub enum LoxResult {
     ParseError { token: Token, message: String },
     RuntimeError { token: Token, message: String },
     ScannerError { line: usize, message: String },
     SystemError { message: String },
+    Return { value: Literal },
     Break,
 }
 
@@ -23,6 +24,7 @@ impl fmt::Display for LoxResult {
             Self::ScannerError { line, message } => write!(f, "Line: {}, Error: {}", line, message),
             Self::SystemError { message } => write!(f, "System error: {}", message),
             Self::Break => write!(f, ""),
+            Self::Return { value: _ } => write!(f, ""),
         }
     }
 }
@@ -76,6 +78,10 @@ impl LoxResult {
                 eprintln!("System Error: {}", message);
             }
             Self::Break => {}
+            Self::Return { value: _ } => {}
         }
+    }
+    pub fn return_value(value: Literal) -> LoxResult {
+        LoxResult::Return { value }
     }
 }

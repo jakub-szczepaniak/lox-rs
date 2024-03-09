@@ -42,8 +42,10 @@ impl LoxCallable for LoxFunction {
         for (parameter, argument) in self.params.iter().zip(arguments.iter()) {
             environment.define(parameter.as_string(), argument.clone());
         }
-        interpreter.execute_block(&self.body, environment)?;
-
-        Ok(Literal::Nil)
+        match interpreter.execute_block(&self.body, environment) {
+            Err(LoxResult::Return { value }) => Ok(value),
+            Err(e) => Err(e),
+            Ok(_) => Ok(Literal::Nil),
+        }
     }
 }
