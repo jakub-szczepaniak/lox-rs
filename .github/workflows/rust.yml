@@ -14,7 +14,9 @@ jobs:
       with:
         toolchain: stable
 
-    - name: Build
+    - name: Build the ast resources
+      run: cargo run -p lox-gen-ast ./lox-rs/src/ --verbose
+    - name: Build the interpreter
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
